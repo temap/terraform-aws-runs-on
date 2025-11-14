@@ -1,6 +1,6 @@
-# .gitignore for OpenTofu
+# .gitignore for OpenTofu projects
 
-# Local .terraform directories
+# Local .terraform directories (OpenTofu uses same structure)
 **/.terraform/*
 
 # .tfstate files
@@ -21,56 +21,46 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Ignore transient lock info files created by terraform apply
+# Ignore transient lock info files created by tofu apply
 .terraform.tfstate.lock.info
 
 # Include override files you do wish to add to version control using negated pattern
 # !example_override.tf
 
-# Ignore CLI configuration files
+# OpenTofu CLI configuration files
+.tofurc
 .terraformrc
 terraform.rc
-.tofurc
 
-# OpenTofu/Terraform plan output
-tfplan
-tfplan.*
-*.tfplan
+# Ignore lock file (commit this for reproducible builds)
+.terraform.lock.hcl
 
-# OpenTofu/Terraform lock file
-# Keep this file in version control for consistent provider versions
-# .terraform.lock.hcl
+# OS specific files
+.DS_Store
+Thumbs.db
 
-# IDE and editor files
+# IDE specific files
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
-.DS_Store
 
-# Test output
-test-fixtures/
+# Test and example artifacts
+test-results/
 *.test
 *.out
 
-# Go test files (if using Terratest)
-go.sum
-vendor/
-
 # Backup files
-*.bak
 *.backup
+*.bak
 
-# Temporary files
-tmp/
-temp/
-*.tmp
+# Environment files
+.env
+.env.local
+.env.*.local
 
-# Pre-commit cache
-.pre-commit-cache/
+# Terragrunt cache
+.terragrunt-cache/
 
-# Documentation build artifacts
-site/
-
-cloudformation*
+scripts
