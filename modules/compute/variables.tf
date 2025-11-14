@@ -12,6 +12,12 @@ variable "cost_allocation_tag" {
   default     = "CostCenter"
 }
 
+variable "environment" {
+  description = "Environment name (e.g., prod, dev, staging)"
+  type        = string
+  default     = "production"
+}
+
 variable "config_bucket_name" {
   description = "S3 bucket name for configuration storage"
   type        = string

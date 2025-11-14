@@ -6,6 +6,7 @@ module "storage" {
   source = "./modules/storage"
 
   stack_name            = var.stack_name
+  environment           = var.environment
   cache_expiration_days = 30
   tags                  = var.tags
 }
@@ -15,6 +16,7 @@ module "compute" {
   source = "./modules/compute"
 
   stack_name         = var.stack_name
+  environment        = var.environment
   security_group_ids = var.security_group_ids
 
   config_bucket_name = module.storage.config_bucket_name

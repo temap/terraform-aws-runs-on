@@ -45,6 +45,12 @@ variable "stack_name" {
   default     = "runs-on"
 }
 
+variable "environment" {
+  description = "Environment name (e.g., production, staging, development)"
+  type        = string
+  default     = "production"
+}
+
 variable "tags" {
   description = "Additional tags for all resources"
   type        = map(string)

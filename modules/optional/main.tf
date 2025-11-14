@@ -1,5 +1,5 @@
-# modules/compute/main.tf
-# Compute module orchestration for RunsOn - EC2 launch templates and IAM roles
+# modules/optional/main.tf
+# Optional module orchestration for RunsOn - EFS and ECR
 
 terraform {
   required_version = ">= 1.6.0"
@@ -22,7 +22,7 @@ locals {
     var.tags,
     {
       ManagedBy = "opentofu"
-      Module    = "runs-on-compute"
+      Module    = "runs-on-optional"
     }
   )
 }

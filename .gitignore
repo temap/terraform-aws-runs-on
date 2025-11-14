@@ -72,3 +72,5 @@ temp/
 
 # Documentation build artifacts
 site/
+
+cloudformation*

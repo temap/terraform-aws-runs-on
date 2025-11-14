@@ -9,9 +9,9 @@ Minimal, batteries-included OpenTofu module for deploying [RunsOn](https://runs-
 ### Completed
 - ✅ Development tooling setup (Makefile, pre-commit, linting)
 - ✅ Storage module (S3 buckets for config/cache/logging)
+- ✅ Compute module (EC2 launch templates, IAM roles)
 
 ### In Progress
-- 🔨 Compute module (EC2 launch templates, IAM roles)
 - 🔨 Core module (App Runner, SQS, DynamoDB, SNS)
 
 ### Planned
@@ -43,7 +43,7 @@ module "runs_on" {
 runs-on-tf/
 ├── modules/
 │   ├── storage/    # S3 buckets (DONE)
-│   ├── compute/    # EC2 launch templates, IAM
+│   ├── compute/    # EC2 launch templates, IAM (DONE)
 │   ├── core/       # App Runner, SQS, DynamoDB
 │   └── optional/   # EFS, ECR
 ├── examples/

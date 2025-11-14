@@ -28,8 +28,14 @@ variable "cache_expiration_days" {
   }
 }
 
+variable "environment" {
+  description = "Environment name (e.g., prod, dev, staging)"
+  type        = string
+  default     = "production"
+}
+
 variable "tags" {
-  description = "Additional tags to apply to all storage resources"
+  description = "Additional tags for all resources"
   type        = map(string)
   default     = {}
 }
