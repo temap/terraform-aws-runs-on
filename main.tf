@@ -34,7 +34,7 @@ module "compute" {
   cache_bucket_arn   = module.storage.cache_bucket_arn
 
   # Networking configuration
-  security_group_ids = var.security_group_ids
+  security_group_ids = local.effective_security_group_ids
 
   # CloudWatch configuration
   log_group_name     = var.log_group_name
@@ -89,7 +89,7 @@ module "optional" {
   # Networking for EFS
   vpc_id             = var.vpc_id
   public_subnet_ids  = var.public_subnet_ids
-  security_group_ids = var.security_group_ids
+  security_group_ids = local.effective_security_group_ids
 
   tags = var.tags
 }
@@ -114,7 +114,7 @@ module "core" {
   vpc_id             = var.vpc_id
   public_subnet_ids  = var.public_subnet_ids
   private_subnet_ids = var.private_subnet_ids
-  security_group_ids = var.security_group_ids
+  security_group_ids = local.effective_security_group_ids
 
   # S3 bucket dependencies from storage module
   config_bucket_name = module.storage.config_bucket_name
@@ -168,7 +168,7 @@ module "core" {
   logger_level                      = var.logger_level
 
   # Alerting
-  alert_email             = var.alert_email
+  email                   = var.email
   alert_https_endpoint    = var.alert_https_endpoint
   alert_slack_webhook_url = var.alert_slack_webhook_url
 

@@ -116,7 +116,7 @@ variable "launch_template_windows_private_id" {
 variable "app_image" {
   description = "App Runner image identifier"
   type        = string
-  default     = "public.ecr.aws/runs-on/runs-on:v2.10.0"
+  default     = "public.ecr.aws/c5h5o9k1/runs-on/runs-on:v2.10.0"
 }
 
 variable "app_tag" {
@@ -272,7 +272,7 @@ variable "logger_level" {
   default     = "info"
 }
 
-variable "alert_email" {
+variable "email" {
   description = "Email address for alerts"
   type        = string
   default     = ""

@@ -24,11 +24,11 @@ resource "aws_sns_topic" "alerts" {
 ###########################
 
 resource "aws_sns_topic_subscription" "email" {
-  count = var.alert_email != "" ? 1 : 0
+  count = var.email != "" ? 1 : 0
 
   topic_arn = aws_sns_topic.alerts.arn
   protocol  = "email"
-  endpoint  = var.alert_email
+  endpoint  = var.email
 }
 
 resource "aws_sns_topic_subscription" "https" {

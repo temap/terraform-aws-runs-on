@@ -52,6 +52,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logging" {
     id     = "DeleteOldLogs"
     status = "Enabled"
 
+    filter {}
+
     expiration {
       days = 90
     }
@@ -65,6 +67,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logging" {
     id     = "CleanupIncompleteMultipartUploads"
     status = "Enabled"
 
+    filter {}
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
@@ -73,6 +77,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logging" {
   rule {
     id     = "CleanupExpiredObjectDeleteMarkers"
     status = "Enabled"
+
+    filter {}
 
     expiration {
       expired_object_delete_marker = true
@@ -219,6 +225,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "config" {
     id     = "CleanupIncompleteMultipartUploads"
     status = "Enabled"
 
+    filter {}
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
@@ -227,6 +235,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "config" {
   rule {
     id     = "CleanupExpiredObjectDeleteMarkers"
     status = "Enabled"
+
+    filter {}
 
     expiration {
       expired_object_delete_marker = true
@@ -353,6 +363,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "cache" {
     id     = "CleanupIncompleteMultipartUploads"
     status = "Enabled"
 
+    filter {}
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
@@ -361,6 +373,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "cache" {
   rule {
     id     = "CleanupExpiredObjectDeleteMarkers"
     status = "Enabled"
+
+    filter {}
 
     expiration {
       expired_object_delete_marker = true

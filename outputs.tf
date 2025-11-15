@@ -98,6 +98,16 @@ output "resource_group_name" {
   value       = module.compute.resource_group_name
 }
 
+output "security_group_id" {
+  description = "ID of the created security group (null if using provided security groups)"
+  value       = local.create_security_group ? aws_security_group.runners[0].id : null
+}
+
+output "effective_security_group_ids" {
+  description = "Effective security group IDs being used (created or provided)"
+  value       = local.effective_security_group_ids
+}
+
 ###########################
 # Core Service Outputs
 ###########################

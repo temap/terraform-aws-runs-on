@@ -102,13 +102,9 @@ variable "private_subnet_ids" {
 }
 
 variable "security_group_ids" {
-  description = "Security group IDs for runner instances and App Runner service"
+  description = "Security group IDs for runner instances and App Runner service. If empty list provided, security groups will be created automatically."
   type        = list(string)
-
-  validation {
-    condition     = length(var.security_group_ids) >= 1
-    error_message = "At least one security group ID is required."
-  }
+  default     = []
 }
 
 variable "networking_stack" {
@@ -252,7 +248,7 @@ variable "ec2_custom_policy_json" {
 variable "app_image" {
   description = "App Runner container image for RunsOn service"
   type        = string
-  default     = "public.ecr.aws/runs-on/runs-on:v2.10.0"
+  default     = "public.ecr.aws/c5h5o9k1/runs-on/runs-on:v2.10.0"
 }
 
 variable "app_tag" {
@@ -297,6 +293,17 @@ variable "ssh_allowed" {
   description = "Allow SSH access to runner instances"
   type        = bool
   default     = false
+}
+
+variable "ssh_cidr_range" {
+  description = "CIDR range allowed for SSH access to runner instances (only applies if ssh_allowed is true)"
+  type        = string
+  default     = "0.0.0.0/0"
+
+  validation {
+    condition     = can(cidrhost(var.ssh_cidr_range, 0))
+    error_message = "ssh_cidr_range must be a valid IPv4 CIDR block."
+  }
 }
 
 variable "ec2_queue_size" {
@@ -412,7 +419,7 @@ variable "logger_level" {
 # Alert Configuration
 ###########################
 
-variable "alert_email" {
+variable "email" {
   description = "Email address for alerts and notifications (requires confirmation)"
   type        = string
   default     = ""
