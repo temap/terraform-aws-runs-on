@@ -265,7 +265,7 @@ resource "aws_apprunner_service" "this" {
     }
 
     ingress_configuration {
-      is_publicly_accessible = false
+      is_publicly_accessible = true
     }
 
     ip_address_type = "IPV4"
@@ -284,7 +284,7 @@ resource "aws_apprunner_service" "this" {
   source_configuration {
     image_repository {
       image_configuration {
-        port = "3000"
+        port = "8080"
 
         runtime_environment_variables = {
           RUNS_ON_AWS_ACCOUNT_ID                    = data.aws_caller_identity.current.account_id
