@@ -10,8 +10,11 @@ resource "aws_cloudwatch_event_rule" "spot_interruption" {
   description = "Capture EC2 Spot Instance interruption warnings"
 
   event_pattern = jsonencode({
-    source      = ["aws.ec2"]
-    detail-type = ["EC2 Spot Instance Interruption Warning"]
+    source = ["aws.ec2"]
+    detail-type = [
+      "EC2 Spot Instance Interruption Warning",
+      "EC2 Instance State-change Notification"
+    ]
   })
 
   tags = merge(
@@ -65,7 +68,7 @@ resource "aws_scheduler_schedule" "cost_report" {
   count = var.enable_cost_reports ? 1 : 0
 
   name                         = "${var.stack_name}-cost-report"
-  schedule_expression          = "cron(0 8 * * ? *)" # Daily at 8 AM UTC
+  schedule_expression          = "cron(5 0 * * ? *)"
   schedule_expression_timezone = "UTC"
 
   flexible_time_window {
@@ -81,7 +84,7 @@ resource "aws_scheduler_schedule" "cost_report" {
     }
 
     input = jsonencode({
-      type = "cost_report"
+      "detail-type" = "RunsOn Cost Report"
     })
   }
 }
@@ -90,7 +93,7 @@ resource "aws_scheduler_schedule" "cost_allocation_tag" {
   count = var.enable_cost_reports ? 1 : 0
 
   name                         = "${var.stack_name}-cost-allocation-tag"
-  schedule_expression          = "cron(0 9 * * ? *)" # Daily at 9 AM UTC
+  schedule_expression          = "cron(10 0 * * ? *)"
   schedule_expression_timezone = "UTC"
 
   flexible_time_window {
@@ -106,7 +109,7 @@ resource "aws_scheduler_schedule" "cost_allocation_tag" {
     }
 
     input = jsonencode({
-      type = "cost_allocation_tag"
+      "detail-type" = "RunsOn Cost Allocation Tag"
     })
   }
 }

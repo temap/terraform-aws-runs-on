@@ -11,6 +11,9 @@ resource "aws_launch_template" "linux_default" {
   image_id      = var.linux_ami_id
   instance_type = "t3.medium" # Placeholder, will be overridden at launch
 
+  ebs_optimized                        = true
+  instance_initiated_shutdown_behavior = "terminate"
+
   iam_instance_profile {
     arn = aws_iam_instance_profile.ec2.arn
   }
@@ -100,6 +103,9 @@ resource "aws_launch_template" "windows_default" {
   name_prefix   = "${var.stack_name}-windows-default-"
   image_id      = var.windows_ami_id
   instance_type = "t3.large" # Placeholder
+
+  ebs_optimized                        = true
+  instance_initiated_shutdown_behavior = "terminate"
 
   iam_instance_profile {
     arn = aws_iam_instance_profile.ec2.arn
@@ -193,6 +199,9 @@ resource "aws_launch_template" "linux_private" {
   image_id      = var.linux_ami_id
   instance_type = "t3.medium"
 
+  ebs_optimized                        = true
+  instance_initiated_shutdown_behavior = "terminate"
+
   iam_instance_profile {
     arn = aws_iam_instance_profile.ec2.arn
   }
@@ -284,6 +293,9 @@ resource "aws_launch_template" "windows_private" {
   name_prefix   = "${var.stack_name}-windows-private-"
   image_id      = var.windows_ami_id
   instance_type = "t3.large"
+
+  ebs_optimized                        = true
+  instance_initiated_shutdown_behavior = "terminate"
 
   iam_instance_profile {
     arn = aws_iam_instance_profile.ec2.arn

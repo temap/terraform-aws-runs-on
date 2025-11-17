@@ -8,7 +8,7 @@
 resource "aws_apprunner_auto_scaling_configuration_version" "this" {
   auto_scaling_configuration_name = "${var.stack_name}-autoscaling"
   max_concurrency                 = 100
-  max_size                        = 5
+  max_size                        = 25
   min_size                        = 1
 
   tags = merge(
@@ -240,6 +240,32 @@ resource "aws_iam_role_policy" "apprunner_permissions" {
             "cloudwatch:namespace" = "RunsOn"
           }
         }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ce:GetCostAndUsage",
+          "ce:UpdateCostAllocationTagsStatus",
+          "cloudtrail:LookupEvents",
+          "cloudwatch:GetMetricData",
+          "cloudwatch:DescribeAlarms",
+          "sns:ListSubscriptionsByTopic",
+          "ec2:DescribeRouteTables",
+          "ec2:DescribeLaunchTemplateVersions"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:CreateServiceLinkedRole"
+        ]
+        Resource = "arn:aws:iam::*:role/aws-service-role/spot.amazonaws.com/AWSServiceRoleForEC2Spot"
+        Condition = {
+          StringEquals = {
+            "iam:AWSServiceName" = "spot.amazonaws.com"
+          }
+        }
       }
     ]
   })
@@ -275,8 +301,8 @@ resource "aws_apprunner_service" "this" {
     path                = "/ping"
     protocol            = "HTTP"
     healthy_threshold   = 1
-    unhealthy_threshold = 5
-    interval            = 10
+    unhealthy_threshold = 10
+    interval            = 3
   }
 
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.this.arn

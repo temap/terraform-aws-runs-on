@@ -43,6 +43,11 @@ resource "aws_iam_role_policy_attachment" "ec2_cloudwatch" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
+resource "aws_iam_role_policy_attachment" "ec2_ecr_public" {
+  role       = aws_iam_role.ec2_instance.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonElasticContainerRegistryPublicFullAccess"
+}
+
 # Inline policies for EC2 instances
 resource "aws_iam_role_policy" "ec2_read_only" {
   name = "ReadOnly"

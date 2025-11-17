@@ -77,10 +77,10 @@ resource "aws_dynamodb_table" "workflow_jobs" {
     range_key       = "created_at_unix"
     projection_type = "INCLUDE"
     non_key_attributes = [
-      "repository",
-      "workflow",
-      "status",
-      "runner"
+      "installation_id",
+      "org_name",
+      "repo_name",
+      "job_id"
     ]
   }
 

@@ -205,7 +205,7 @@ variable "runner_default_disk_size" {
 variable "runner_default_volume_throughput" {
   description = "Default EBS volume throughput in MiB/s (gp3 volumes only)"
   type        = number
-  default     = 250
+  default     = 400
 
   validation {
     condition     = var.runner_default_volume_throughput >= 125 && var.runner_default_volume_throughput <= 1000
@@ -216,7 +216,7 @@ variable "runner_default_volume_throughput" {
 variable "runner_large_disk_size" {
   description = "Large EBS volume size in GB for runner instances requiring more storage"
   type        = number
-  default     = 100
+  default     = 80
 
   validation {
     condition     = var.runner_large_disk_size >= 20 && var.runner_large_disk_size <= 16384
@@ -227,7 +227,7 @@ variable "runner_large_disk_size" {
 variable "runner_large_volume_throughput" {
   description = "Large EBS volume throughput in MiB/s (gp3 volumes only)"
   type        = number
-  default     = 500
+  default     = 750
 
   validation {
     condition     = var.runner_large_volume_throughput >= 125 && var.runner_large_volume_throughput <= 1000

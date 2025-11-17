@@ -213,7 +213,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "config" {
     }
 
     expiration {
-      days = 7
+      days = 30
     }
 
     noncurrent_version_expiration {
@@ -334,7 +334,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "cache" {
     }
 
     expiration {
-      days = 7
+      days = 1
     }
 
     noncurrent_version_expiration {
@@ -366,7 +366,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "cache" {
     filter {}
 
     abort_incomplete_multipart_upload {
-      days_after_initiation = 7
+      days_after_initiation = 1
     }
   }
 

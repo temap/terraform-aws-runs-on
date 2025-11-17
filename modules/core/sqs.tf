@@ -72,9 +72,9 @@ resource "aws_sqs_queue" "main" {
   name                        = local.queue_main
   fifo_queue                  = true
   content_based_deduplication = true
-  message_retention_seconds   = 345600 # 4 days
-  receive_wait_time_seconds   = 20
-  visibility_timeout_seconds  = 300
+  message_retention_seconds   = 86400
+  receive_wait_time_seconds   = 10
+  visibility_timeout_seconds  = 120
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.main_dead_letter.arn
@@ -95,9 +95,9 @@ resource "aws_sqs_queue" "jobs" {
   name                        = local.queue_jobs
   fifo_queue                  = true
   content_based_deduplication = true
-  message_retention_seconds   = 345600 # 4 days
-  receive_wait_time_seconds   = 20
-  visibility_timeout_seconds  = 300
+  message_retention_seconds   = 86400
+  receive_wait_time_seconds   = 10
+  visibility_timeout_seconds  = 120
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.jobs_dead_letter.arn
@@ -118,9 +118,9 @@ resource "aws_sqs_queue" "github" {
   name                        = local.queue_github
   fifo_queue                  = true
   content_based_deduplication = true
-  message_retention_seconds   = 345600 # 4 days
-  receive_wait_time_seconds   = 20
-  visibility_timeout_seconds  = 300
+  message_retention_seconds   = 86400
+  receive_wait_time_seconds   = 10
+  visibility_timeout_seconds  = 120
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.github_dead_letter.arn
@@ -139,9 +139,9 @@ resource "aws_sqs_queue" "github" {
 
 resource "aws_sqs_queue" "pool" {
   name                       = local.queue_pool
-  message_retention_seconds  = 345600 # 4 days
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 300
+  message_retention_seconds  = 86400
+  receive_wait_time_seconds  = 10
+  visibility_timeout_seconds = 120
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.pool_dead_letter.arn
@@ -160,9 +160,9 @@ resource "aws_sqs_queue" "pool" {
 
 resource "aws_sqs_queue" "housekeeping" {
   name                       = local.queue_housekeeping
-  message_retention_seconds  = 345600 # 4 days
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 300
+  message_retention_seconds  = 86400
+  receive_wait_time_seconds  = 10
+  visibility_timeout_seconds = 120
 
   tags = merge(
     local.common_tags,
@@ -176,9 +176,9 @@ resource "aws_sqs_queue" "housekeeping" {
 
 resource "aws_sqs_queue" "termination" {
   name                       = local.queue_termination
-  message_retention_seconds  = 345600 # 4 days
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 300
+  message_retention_seconds  = 86400
+  receive_wait_time_seconds  = 10
+  visibility_timeout_seconds = 120
 
   tags = merge(
     local.common_tags,
@@ -192,9 +192,9 @@ resource "aws_sqs_queue" "termination" {
 
 resource "aws_sqs_queue" "events" {
   name                       = local.queue_events
-  message_retention_seconds  = 345600 # 4 days
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 300
+  message_retention_seconds  = 7200
+  receive_wait_time_seconds  = 10
+  visibility_timeout_seconds = 120
 
   tags = merge(
     local.common_tags,
