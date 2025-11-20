@@ -197,8 +197,6 @@ resource "aws_launch_template" "windows_default" {
 
 # Linux Private Launch Template
 resource "aws_launch_template" "linux_private" {
-  count = var.private_mode != "false" ? 1 : 0
-
   name_prefix   = "${var.stack_name}-linux-private-"
   image_id      = var.linux_ami_id
   instance_type = "t3.medium"
@@ -294,8 +292,6 @@ resource "aws_launch_template" "linux_private" {
 
 # Windows Private Launch Template
 resource "aws_launch_template" "windows_private" {
-  count = var.private_mode != "false" ? 1 : 0
-
   name_prefix   = "${var.stack_name}-windows-private-"
   image_id      = var.windows_ami_id
   instance_type = "t3.large"
