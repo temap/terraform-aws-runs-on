@@ -22,7 +22,7 @@ jobs:
   # Unit tests - fast, cheap, run in parallel
   unit-tests:
     name: Unit Tests - ${{ matrix.module }}
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -75,7 +75,7 @@ jobs:
   # Scenario tests - medium cost, run in parallel
   scenario-tests:
     name: Scenario - ${{ matrix.scenario }}
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64
     needs: unit-tests
     timeout-minutes: 45
     strategy:
@@ -128,7 +128,7 @@ jobs:
   # Expensive tests - only run on main branch or manual trigger
   expensive-tests:
     name: Expensive - ${{ matrix.scenario }}
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64
     needs: scenario-tests
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 60
@@ -182,7 +182,7 @@ jobs:
   # Test summary
   test-summary:
     name: Test Summary
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64
     needs: [unit-tests, scenario-tests]
     if: always()
     steps:
