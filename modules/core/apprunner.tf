@@ -54,8 +54,7 @@ resource "aws_iam_role" "apprunner" {
         Effect = "Allow"
         Principal = {
           Service = [
-            "tasks.apprunner.amazonaws.com",
-            "build.apprunner.amazonaws.com"
+            "tasks.apprunner.amazonaws.com"
           ]
         }
         Action = "sts:AssumeRole"
@@ -79,182 +78,35 @@ resource "aws_iam_role_policy_attachment" "apprunner_ecr" {
 
 # App Runner service policy
 resource "aws_iam_role_policy" "apprunner_permissions" {
-  name = "AppRunnerPermissions"
+  name = "AppRunnerEC2Permissions"
   role = aws_iam_role.apprunner.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # Describe actions on "*" (CF L2822-2838)
       {
         Effect = "Allow"
         Action = [
-          "ec2:RunInstances",
-          "ec2:TerminateInstances",
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceStatus",
-          "ec2:DescribeInstanceTypes",
           "ec2:DescribeImages",
+          "ec2:DescribeInstances",
           "ec2:DescribeSubnets",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeKeyPairs",
-          "ec2:DescribeTags",
-          "ec2:CreateTags",
+          "ec2:DescribeRouteTables",
           "ec2:DescribeVolumes",
           "ec2:DescribeSnapshots",
-          "ec2:DescribeAvailabilityZones",
-          "ec2:DescribeSpotPriceHistory",
-          "ec2:DescribeSpotInstanceRequests",
-          "ec2:RequestSpotInstances",
-          "ec2:CancelSpotInstanceRequests"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateTags",
-          "ec2:DeleteTags"
-        ]
-        Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
-        Condition = {
-          StringEquals = {
-            "ec2:CreateAction" = [
-              "RunInstances",
-              "CreateVolume",
-              "CreateSnapshot"
-            ]
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudformation:DescribeStacks",
-          "cloudformation:GetTemplate"
-        ]
-        Resource = "arn:aws:cloudformation:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stack/${var.stack_name}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ssm:GetParameter",
-          "ssm:GetParameters"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:PassRole"
-        ]
-        Resource = var.ec2_instance_role_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:GetRole",
-          "iam:GetInstanceProfile"
-        ]
-        Resource = [
-          var.ec2_instance_role_arn,
-          var.ec2_instance_profile_arn
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.config_bucket_arn,
-          "${var.config_bucket_arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.cache_bucket_arn,
-          "${var.cache_bucket_arn}/runners/*",
-          "${var.cache_bucket_arn}/agents/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
-        Resource = aws_sns_topic.alerts.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:SendMessage",
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes",
-          "sqs:GetQueueUrl"
-        ]
-        Resource = [
-          aws_sqs_queue.main.arn,
-          aws_sqs_queue.jobs.arn,
-          aws_sqs_queue.github.arn,
-          aws_sqs_queue.pool.arn,
-          aws_sqs_queue.housekeeping.arn,
-          aws_sqs_queue.termination.arn,
-          aws_sqs_queue.events.arn
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:Query",
-          "dynamodb:Scan"
-        ]
-        Resource = [
-          aws_dynamodb_table.locks.arn,
-          aws_dynamodb_table.workflow_jobs.arn,
-          "${aws_dynamodb_table.workflow_jobs.arn}/index/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudwatch:PutMetricData",
-          "cloudwatch:GetMetricStatistics",
-          "cloudwatch:ListMetrics"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "cloudwatch:namespace" = "RunsOn"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
+          "ec2:DescribeLaunchTemplateVersions",
           "ce:GetCostAndUsage",
           "ce:UpdateCostAllocationTagsStatus",
-          "cloudtrail:LookupEvents",
+          "cloudwatch:PutMetricData",
           "cloudwatch:GetMetricData",
           "cloudwatch:DescribeAlarms",
-          "sns:ListSubscriptionsByTopic",
-          "ec2:DescribeRouteTables",
-          "ec2:DescribeLaunchTemplateVersions"
+          "cloudtrail:LookupEvents",
+          "iam:GetRole",
+          "sns:ListSubscriptionsByTopic"
         ]
         Resource = "*"
       },
+      # iam:CreateServiceLinkedRole (CF L2839-2845)
       {
         Effect = "Allow"
         Action = [
@@ -266,6 +118,182 @@ resource "aws_iam_role_policy" "apprunner_permissions" {
             "iam:AWSServiceName" = "spot.amazonaws.com"
           }
         }
+      },
+      # cloudformation:DescribeStacks (CF L2846-2849)
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudformation:DescribeStacks"
+        ]
+        Resource = "arn:aws:cloudformation:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stack/${var.stack_name}/*"
+      },
+      # ec2:CreateFleet, DeleteFleets (CF L2850-2854)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateFleet",
+          "ec2:DeleteFleets"
+        ]
+        Resource = "*"
+      },
+      # ec2:CreateTags, RunInstances (CF L2855-2861)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateTags",
+          "ec2:RunInstances"
+        ]
+        Resource = [
+          "arn:aws:ec2:${data.aws_region.current.name}::image/*",
+          "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
+        ]
+      },
+      # iam:PassRole, GetRole on EC2InstanceRole (CF L2862-2866)
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole",
+          "iam:GetRole"
+        ]
+        Resource = var.ec2_instance_role_arn
+      },
+      # SSM parameters scoped to stack (CF L2867-2875)
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:PutParameter",
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:DeleteParameter",
+          "ssm:DeleteParameters"
+        ]
+        Resource = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.stack_name}/*"
+      },
+      # ec2:TerminateInstances, StopInstances, StartInstances with tag condition (CF L2876-2883)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:TerminateInstances",
+          "ec2:StopInstances",
+          "ec2:StartInstances"
+        ]
+        Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*"
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/runs-on-stack-name" = var.stack_name
+          }
+        }
+      },
+      # ec2:DeleteVolume, DeleteSnapshot with tag condition (CF L2884-2891)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DeleteVolume",
+          "ec2:DeleteSnapshot"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/runs-on-stack-name" = var.stack_name
+          }
+        }
+      },
+      # S3 config bucket: GetObject, PutObject, ListBucket (CF L2892-2899)
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.config_bucket_arn,
+          "${var.config_bucket_arn}/*"
+        ]
+      },
+      # S3 config bucket: DeleteObject on runs-on/db/* only (CF L2900-2904)
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:DeleteObject"
+        ]
+        Resource = "${var.config_bucket_arn}/runs-on/db/*"
+      },
+      # S3 cache bucket: PutObject only (CF L2905-2911)
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject"
+        ]
+        Resource = [
+          var.cache_bucket_arn,
+          "${var.cache_bucket_arn}/runners/*",
+          "${var.cache_bucket_arn}/agents/*"
+        ]
+      },
+      # SNS Publish (CF L2912-2915)
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.alerts.arn
+      },
+      # SQS permissions (CF L2916-2928) - no GetQueueUrl
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = [
+          aws_sqs_queue.main.arn,
+          aws_sqs_queue.pool.arn,
+          aws_sqs_queue.housekeeping.arn,
+          aws_sqs_queue.termination.arn,
+          aws_sqs_queue.events.arn,
+          aws_sqs_queue.jobs.arn,
+          aws_sqs_queue.github.arn
+        ]
+      },
+      # DynamoDB locks table (CF L2929-2935)
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = aws_dynamodb_table.locks.arn
+      },
+      # DynamoDB workflow_jobs table (CF L2936-2945)
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:BatchGetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          aws_dynamodb_table.workflow_jobs.arn,
+          "${aws_dynamodb_table.workflow_jobs.arn}/index/*"
+        ]
+      },
+      # CloudWatch logs (CF L2946-2953)
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/apprunner/RunsOnService-*"
       }
     ]
   })
