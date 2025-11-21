@@ -1,69 +1,36 @@
-# user-data-windows.ps1
-# User data script for RunsOn Windows runners
-
 <powershell>
-
-# RunsOn configuration
-$env:RUNS_ON_APP_TAG = "${app_tag}"
-$env:RUNS_ON_BOOTSTRAP_TAG = "${bootstrap_tag}"
-$env:RUNS_ON_CONFIG_BUCKET = "${config_bucket}"
-$env:RUNS_ON_CACHE_BUCKET = "${cache_bucket}"
-$env:RUNS_ON_REGION = "${region}"
-$env:RUNS_ON_LOG_GROUP = "${log_group}"
-
-# Optional: EFS configuration (environment variable only for Windows)
-%{ if efs_file_system_id != "" ~}
-$env:RUNS_ON_EFS_ID = "${efs_file_system_id}"
-%{ endif ~}
-
-# Optional: Ephemeral registry configuration
-%{ if ephemeral_registry_uri != "" ~}
-$env:RUNS_ON_EPHEMERAL_REGISTRY = "${ephemeral_registry_uri}"
-%{ endif ~}
-
-# Set error action preference
-$ErrorActionPreference = "Stop"
-
-# Create log directory
-New-Item -ItemType Directory -Force -Path C:\runs-on\logs | Out-Null
-$LogFile = "C:\runs-on\logs\bootstrap.log"
-
-function Write-Log {
-    param($Message)
-    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $LogMessage = "[$Timestamp] $Message"
-    Write-Host $LogMessage
-    Add-Content -Path $LogFile -Value $LogMessage
-}
-
-Write-Log "Starting RunsOn Windows runner initialization..."
-
-# Install AWS CLI if not present
-if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {
-    Write-Log "Installing AWS CLI..."
-    $installerUrl = "https://awscli.amazonaws.com/AWSCLIV2.msi"
-    $installerPath = "$env:TEMP\AWSCLIV2.msi"
-    Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
-    Start-Process msiexec.exe -ArgumentList "/i $installerPath /quiet /norestart" -Wait
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-}
-
-# Download and run RunsOn bootstrap script
-Write-Log "Downloading RunsOn bootstrap script..."
+Get-Date -format s
+$env:RUNS_ON_RUNNER_MAX_RUNTIME = "${runner_max_runtime}"
+$env:RUNS_ON_LOG_GROUP_NAME = "${log_group}"
+$env:RUNS_ON_DEBUG = "${app_debug}"
+$env:AWS_REGION = "${region}"
+%{ if efs_file_system_id != "" }$env:RUNS_ON_EFS_ID = "${efs_file_system_id}"%{ endif }
+%{ if ephemeral_registry_uri != "" }$env:RUNS_ON_EPHEMERAL_REGISTRY = "${ephemeral_registry_uri}"%{ endif }
+# Enable and start SSM Agent service
 try {
-    $bootstrapScript = "C:\runs-on\bootstrap.ps1"
-    New-Item -ItemType Directory -Force -Path C:\runs-on | Out-Null
-
-    aws s3 cp "s3://$env:RUNS_ON_CONFIG_BUCKET/agents/$env:RUNS_ON_BOOTSTRAP_TAG/bootstrap-windows.ps1" $bootstrapScript
-
-    Write-Log "Running RunsOn bootstrap..."
-    & $bootstrapScript *>> $LogFile
-
-    Write-Log "RunsOn runner initialization complete"
+  Set-Service -Name "AmazonSSMAgent" -StartupType Automatic -ErrorAction SilentlyContinue
+  Start-Service -Name "AmazonSSMAgent" -ErrorAction SilentlyContinue
+  Write-Output "SSM Agent service enabled and started"
+} catch {
+  Write-Output "Warning: Failed to start SSM Agent service: $($_.Exception.Message)"
 }
-catch {
-    Write-Log "ERROR: Bootstrap failed - $_"
-    exit 1
+$bootstrapBin = "C:\runs-on\bootstrap-${bootstrap_tag}.exe"
+try {
+  New-Item -ItemType Directory -Force -Path (Split-Path $bootstrapBin)
+  if (-not (Test-Path $bootstrapBin)) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $ProgressPreference = 'SilentlyContinue'
+    Invoke-WebRequest -Uri "https://github.com/runs-on/bootstrap/releases/download/${bootstrap_tag}/bootstrap-${bootstrap_tag}-windows-$env:PROCESSOR_ARCHITECTURE.exe" -OutFile $bootstrapBin -UseBasicParsing
+  }
+  Add-MpPreference -ExclusionProcess $bootstrapBin
+  & $bootstrapBin --debug=${app_debug} --exec --post-exec shutdown "s3://${config_bucket}/agents/${app_tag}/agent-windows-$env:PROCESSOR_ARCHITECTURE.exe"
+} finally {
+  if ($env:RUNS_ON_DEBUG -ne "true") {
+    Write-Output "user-data: Going to shut down in a few seconds..."
+    Start-Sleep -Seconds 180
+    Stop-Computer -Force
+  }
 }
-
 </powershell>
+<detach>true</detach>
+<persist>true</persist>

@@ -25,7 +25,7 @@ resource "aws_apprunner_auto_scaling_configuration_version" "this" {
 ###########################
 
 resource "aws_apprunner_vpc_connector" "this" {
-  count = var.private_networking_enabled ? 1 : 0
+  count = var.private_mode != "false" ? 1 : 0
 
   vpc_connector_name = "${var.stack_name}-vpc-connector"
   subnets            = var.private_subnet_ids
@@ -54,8 +54,7 @@ resource "aws_iam_role" "apprunner" {
         Effect = "Allow"
         Principal = {
           Service = [
-            "tasks.apprunner.amazonaws.com",
-            "build.apprunner.amazonaws.com"
+            "tasks.apprunner.amazonaws.com"
           ]
         }
         Action = "sts:AssumeRole"
@@ -79,182 +78,35 @@ resource "aws_iam_role_policy_attachment" "apprunner_ecr" {
 
 # App Runner service policy
 resource "aws_iam_role_policy" "apprunner_permissions" {
-  name = "AppRunnerPermissions"
+  name = "AppRunnerEC2Permissions"
   role = aws_iam_role.apprunner.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # Describe actions on "*" (CF L2822-2838)
       {
         Effect = "Allow"
         Action = [
-          "ec2:RunInstances",
-          "ec2:TerminateInstances",
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceStatus",
-          "ec2:DescribeInstanceTypes",
           "ec2:DescribeImages",
+          "ec2:DescribeInstances",
           "ec2:DescribeSubnets",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeKeyPairs",
-          "ec2:DescribeTags",
-          "ec2:CreateTags",
+          "ec2:DescribeRouteTables",
           "ec2:DescribeVolumes",
           "ec2:DescribeSnapshots",
-          "ec2:DescribeAvailabilityZones",
-          "ec2:DescribeSpotPriceHistory",
-          "ec2:DescribeSpotInstanceRequests",
-          "ec2:RequestSpotInstances",
-          "ec2:CancelSpotInstanceRequests"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateTags",
-          "ec2:DeleteTags"
-        ]
-        Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
-        Condition = {
-          StringEquals = {
-            "ec2:CreateAction" = [
-              "RunInstances",
-              "CreateVolume",
-              "CreateSnapshot"
-            ]
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudformation:DescribeStacks",
-          "cloudformation:GetTemplate"
-        ]
-        Resource = "arn:aws:cloudformation:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stack/${var.stack_name}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ssm:GetParameter",
-          "ssm:GetParameters"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:PassRole"
-        ]
-        Resource = var.ec2_instance_role_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:GetRole",
-          "iam:GetInstanceProfile"
-        ]
-        Resource = [
-          var.ec2_instance_role_arn,
-          var.ec2_instance_profile_arn
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.config_bucket_arn,
-          "${var.config_bucket_arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.cache_bucket_arn,
-          "${var.cache_bucket_arn}/runners/*",
-          "${var.cache_bucket_arn}/agents/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
-        Resource = aws_sns_topic.alerts.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:SendMessage",
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes",
-          "sqs:GetQueueUrl"
-        ]
-        Resource = [
-          aws_sqs_queue.main.arn,
-          aws_sqs_queue.jobs.arn,
-          aws_sqs_queue.github.arn,
-          aws_sqs_queue.pool.arn,
-          aws_sqs_queue.housekeeping.arn,
-          aws_sqs_queue.termination.arn,
-          aws_sqs_queue.events.arn
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:Query",
-          "dynamodb:Scan"
-        ]
-        Resource = [
-          aws_dynamodb_table.locks.arn,
-          aws_dynamodb_table.workflow_jobs.arn,
-          "${aws_dynamodb_table.workflow_jobs.arn}/index/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudwatch:PutMetricData",
-          "cloudwatch:GetMetricStatistics",
-          "cloudwatch:ListMetrics"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "cloudwatch:namespace" = "RunsOn"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
+          "ec2:DescribeLaunchTemplateVersions",
           "ce:GetCostAndUsage",
           "ce:UpdateCostAllocationTagsStatus",
-          "cloudtrail:LookupEvents",
+          "cloudwatch:PutMetricData",
           "cloudwatch:GetMetricData",
           "cloudwatch:DescribeAlarms",
-          "sns:ListSubscriptionsByTopic",
-          "ec2:DescribeRouteTables",
-          "ec2:DescribeLaunchTemplateVersions"
+          "cloudtrail:LookupEvents",
+          "iam:GetRole",
+          "sns:ListSubscriptionsByTopic"
         ]
         Resource = "*"
       },
+      # iam:CreateServiceLinkedRole (CF L2839-2845)
       {
         Effect = "Allow"
         Action = [
@@ -266,6 +118,182 @@ resource "aws_iam_role_policy" "apprunner_permissions" {
             "iam:AWSServiceName" = "spot.amazonaws.com"
           }
         }
+      },
+      # cloudformation:DescribeStacks (CF L2846-2849)
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudformation:DescribeStacks"
+        ]
+        Resource = "arn:aws:cloudformation:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stack/${var.stack_name}/*"
+      },
+      # ec2:CreateFleet, DeleteFleets (CF L2850-2854)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateFleet",
+          "ec2:DeleteFleets"
+        ]
+        Resource = "*"
+      },
+      # ec2:CreateTags, RunInstances (CF L2855-2861)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateTags",
+          "ec2:RunInstances"
+        ]
+        Resource = [
+          "arn:aws:ec2:${data.aws_region.current.name}::image/*",
+          "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
+        ]
+      },
+      # iam:PassRole, GetRole on EC2InstanceRole (CF L2862-2866)
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole",
+          "iam:GetRole"
+        ]
+        Resource = var.ec2_instance_role_arn
+      },
+      # SSM parameters scoped to stack (CF L2867-2875)
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:PutParameter",
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:DeleteParameter",
+          "ssm:DeleteParameters"
+        ]
+        Resource = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.stack_name}/*"
+      },
+      # ec2:TerminateInstances, StopInstances, StartInstances with tag condition (CF L2876-2883)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:TerminateInstances",
+          "ec2:StopInstances",
+          "ec2:StartInstances"
+        ]
+        Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*"
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/runs-on-stack-name" = var.stack_name
+          }
+        }
+      },
+      # ec2:DeleteVolume, DeleteSnapshot with tag condition (CF L2884-2891)
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DeleteVolume",
+          "ec2:DeleteSnapshot"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/runs-on-stack-name" = var.stack_name
+          }
+        }
+      },
+      # S3 config bucket: GetObject, PutObject, ListBucket (CF L2892-2899)
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.config_bucket_arn,
+          "${var.config_bucket_arn}/*"
+        ]
+      },
+      # S3 config bucket: DeleteObject on runs-on/db/* only (CF L2900-2904)
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:DeleteObject"
+        ]
+        Resource = "${var.config_bucket_arn}/runs-on/db/*"
+      },
+      # S3 cache bucket: PutObject only (CF L2905-2911)
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject"
+        ]
+        Resource = [
+          var.cache_bucket_arn,
+          "${var.cache_bucket_arn}/runners/*",
+          "${var.cache_bucket_arn}/agents/*"
+        ]
+      },
+      # SNS Publish (CF L2912-2915)
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.alerts.arn
+      },
+      # SQS permissions (CF L2916-2928) - no GetQueueUrl
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = [
+          aws_sqs_queue.main.arn,
+          aws_sqs_queue.pool.arn,
+          aws_sqs_queue.housekeeping.arn,
+          aws_sqs_queue.termination.arn,
+          aws_sqs_queue.events.arn,
+          aws_sqs_queue.jobs.arn,
+          aws_sqs_queue.github.arn
+        ]
+      },
+      # DynamoDB locks table (CF L2929-2935)
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = aws_dynamodb_table.locks.arn
+      },
+      # DynamoDB workflow_jobs table (CF L2936-2945)
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:BatchGetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          aws_dynamodb_table.workflow_jobs.arn,
+          "${aws_dynamodb_table.workflow_jobs.arn}/index/*"
+        ]
+      },
+      # CloudWatch logs (CF L2946-2953)
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/apprunner/RunsOnService-*"
       }
     ]
   })
@@ -286,8 +314,8 @@ resource "aws_apprunner_service" "this" {
 
   network_configuration {
     egress_configuration {
-      egress_type       = var.private_networking_enabled ? "VPC" : "DEFAULT"
-      vpc_connector_arn = var.private_networking_enabled ? aws_apprunner_vpc_connector.this[0].arn : null
+      egress_type       = var.private_mode != "false" ? "VPC" : "DEFAULT"
+      vpc_connector_arn = var.private_mode != "false" ? aws_apprunner_vpc_connector.this[0].arn : null
     }
 
     ingress_configuration {
@@ -312,61 +340,14 @@ resource "aws_apprunner_service" "this" {
       image_configuration {
         port = "8080"
 
-        runtime_environment_variables = {
-          RUNS_ON_AWS_ACCOUNT_ID                    = data.aws_caller_identity.current.account_id
-          RUNS_ON_ENV                               = var.environment
-          RUNS_ON_COST_ALLOCATION_TAG               = var.cost_allocation_tag
-          RUNS_ON_STACK_NAME                        = var.stack_name
-          RUNS_ON_LOCKS_TABLE                       = aws_dynamodb_table.locks.name
-          RUNS_ON_WORKFLOW_JOBS_TABLE               = aws_dynamodb_table.workflow_jobs.name
-          RUNS_ON_NETWORKING_STACK                  = var.networking_stack
-          RUNS_ON_GITHUB_ORGANIZATION               = var.github_organization
-          RUNS_ON_APP_TAG                           = var.app_tag
-          RUNS_ON_BOOTSTRAP_TAG                     = var.bootstrap_tag
-          RUNS_ON_LICENSE_KEY                       = var.license_key
-          RUNS_ON_RUNNER_CUSTOM_TAGS                = join(",", var.runner_custom_tags)
-          RUNS_ON_BUCKET_CONFIG                     = var.config_bucket_name
-          RUNS_ON_BUCKET_CACHE                      = var.cache_bucket_name
-          RUNS_ON_VPC_ID                            = var.vpc_id
-          RUNS_ON_SECURITY_GROUP_ID                 = join(",", var.security_group_ids)
-          RUNS_ON_INSTANCE_PROFILE_ARN              = var.ec2_instance_profile_arn
-          RUNS_ON_INSTANCE_ROLE_NAME                = var.ec2_instance_role_name
-          RUNS_ON_TOPIC_ARN                         = aws_sns_topic.alerts.arn
-          RUNS_ON_REGION                            = data.aws_region.current.name
-          RUNS_ON_SSH_ALLOWED                       = var.ssh_allowed ? "true" : "false"
-          RUNS_ON_APP_EC2_QUEUE_SIZE                = tostring(var.ec2_queue_size)
-          RUNS_ON_EBS_ENCRYPTION_KEY                = var.ebs_encryption_key_id
-          RUNS_ON_APP_GITHUB_API_STRATEGY           = var.github_api_strategy
-          RUNS_ON_PUBLIC_SUBNET_IDS                 = join(",", var.public_subnet_ids)
-          RUNS_ON_PRIVATE_SUBNET_IDS                = join(",", var.private_subnet_ids)
-          RUNS_ON_PRIVATE                           = var.private_networking_enabled ? "true" : "false"
-          RUNS_ON_DEFAULT_ADMINS                    = var.default_admins
-          RUNS_ON_RUNNER_MAX_RUNTIME                = tostring(var.runner_max_runtime)
-          RUNS_ON_RUNNER_CONFIG_AUTO_EXTENDS_FROM   = var.runner_config_auto_extends_from
-          RUNS_ON_LAUNCH_TEMPLATE_LINUX_DEFAULT     = var.launch_template_linux_default_id
-          RUNS_ON_LAUNCH_TEMPLATE_WINDOWS_DEFAULT   = var.launch_template_windows_default_id
-          RUNS_ON_LAUNCH_TEMPLATE_LINUX_PRIVATE     = var.launch_template_linux_private_id != null ? var.launch_template_linux_private_id : ""
-          RUNS_ON_LAUNCH_TEMPLATE_WINDOWS_PRIVATE   = var.launch_template_windows_private_id != null ? var.launch_template_windows_private_id : ""
-          RUNS_ON_RUNNER_DEFAULT_DISK_SIZE          = tostring(var.runner_default_disk_size)
-          RUNS_ON_RUNNER_DEFAULT_VOLUME_THROUGHPUT  = tostring(var.runner_default_volume_throughput)
-          RUNS_ON_RUNNER_LARGE_DISK_SIZE            = tostring(var.runner_large_disk_size)
-          RUNS_ON_RUNNER_LARGE_VOLUME_THROUGHPUT    = tostring(var.runner_large_volume_throughput)
-          RUNS_ON_QUEUE                             = aws_sqs_queue.main.name
-          RUNS_ON_QUEUE_POOL                        = aws_sqs_queue.pool.name
-          RUNS_ON_QUEUE_HOUSEKEEPING                = aws_sqs_queue.housekeeping.name
-          RUNS_ON_QUEUE_TERMINATION                 = aws_sqs_queue.termination.name
-          RUNS_ON_QUEUE_EVENTS                      = aws_sqs_queue.events.name
-          RUNS_ON_QUEUE_JOBS                        = aws_sqs_queue.jobs.name
-          RUNS_ON_QUEUE_GITHUB                      = aws_sqs_queue.github.name
-          RUNS_ON_COST_REPORTS_ENABLED              = var.enable_cost_reports ? "true" : "false"
-          RUNS_ON_SERVER_PASSWORD                   = var.server_password
-          RUNS_ON_SPOT_CIRCUIT_BREAKER              = var.spot_circuit_breaker
-          RUNS_ON_INTEGRATION_STEP_SECURITY_API_KEY = var.integration_step_security_api_key
-          RUNS_ON_GITHUB_ENTERPRISE_URL             = var.github_enterprise_url
-          OTEL_EXPORTER_OTLP_ENDPOINT               = var.otel_exporter_endpoint
-          OTEL_EXPORTER_OTLP_HEADERS                = var.otel_exporter_headers
-          RUNS_ON_LOGGER_LEVEL                      = var.logger_level
-        }
+        # All environment variables including private launch templates
+        runtime_environment_variables = merge(
+          local.base_env_vars,
+          {
+            RUNS_ON_LAUNCH_TEMPLATE_LINUX_PRIVATE   = var.launch_template_linux_private_id
+            RUNS_ON_LAUNCH_TEMPLATE_WINDOWS_PRIVATE = var.launch_template_windows_private_id
+          }
+        )
       }
 
       image_identifier      = var.app_image

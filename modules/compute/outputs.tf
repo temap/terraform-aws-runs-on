@@ -22,8 +22,8 @@ output "ec2_instance_profile_name" {
 }
 
 output "launch_template_linux_default_id" {
-  description = "ID of the Linux default launch template"
-  value       = aws_launch_template.linux_default.id
+  description = "ID of the Linux default launch template in format ID:Version"
+  value       = "${aws_launch_template.linux_default.id}:${aws_launch_template.linux_default.latest_version}"
 }
 
 output "launch_template_linux_default_latest_version" {
@@ -32,8 +32,8 @@ output "launch_template_linux_default_latest_version" {
 }
 
 output "launch_template_windows_default_id" {
-  description = "ID of the Windows default launch template"
-  value       = aws_launch_template.windows_default.id
+  description = "ID of the Windows default launch template in format ID:Version"
+  value       = "${aws_launch_template.windows_default.id}:${aws_launch_template.windows_default.latest_version}"
 }
 
 output "launch_template_windows_default_latest_version" {
@@ -42,23 +42,23 @@ output "launch_template_windows_default_latest_version" {
 }
 
 output "launch_template_linux_private_id" {
-  description = "ID of the Linux private launch template"
-  value       = var.private_networking_enabled ? aws_launch_template.linux_private[0].id : null
+  description = "ID of the Linux private launch template in format ID:Version"
+  value       = "${aws_launch_template.linux_private.id}:${aws_launch_template.linux_private.latest_version}"
 }
 
 output "launch_template_linux_private_latest_version" {
   description = "Latest version of the Linux private launch template"
-  value       = var.private_networking_enabled ? aws_launch_template.linux_private[0].latest_version : null
+  value       = aws_launch_template.linux_private.latest_version
 }
 
 output "launch_template_windows_private_id" {
-  description = "ID of the Windows private launch template"
-  value       = var.private_networking_enabled ? aws_launch_template.windows_private[0].id : null
+  description = "ID of the Windows private launch template in format ID:Version"
+  value       = "${aws_launch_template.windows_private.id}:${aws_launch_template.windows_private.latest_version}"
 }
 
 output "launch_template_windows_private_latest_version" {
   description = "Latest version of the Windows private launch template"
-  value       = var.private_networking_enabled ? aws_launch_template.windows_private[0].latest_version : null
+  value       = aws_launch_template.windows_private.latest_version
 }
 
 output "log_group_name" {

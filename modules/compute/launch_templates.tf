@@ -85,6 +85,8 @@ resource "aws_launch_template" "linux_default" {
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
     log_group              = var.log_group_name
+    app_debug              = var.app_debug ? "true" : "false"
+    runner_max_runtime     = var.runner_max_runtime
   }))
 
   tags = merge(
@@ -178,6 +180,8 @@ resource "aws_launch_template" "windows_default" {
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
     log_group              = var.log_group_name
+    app_debug              = var.app_debug ? "true" : "false"
+    runner_max_runtime     = var.runner_max_runtime
   }))
 
   tags = merge(
@@ -193,8 +197,6 @@ resource "aws_launch_template" "windows_default" {
 
 # Linux Private Launch Template
 resource "aws_launch_template" "linux_private" {
-  count = var.private_networking_enabled ? 1 : 0
-
   name_prefix   = "${var.stack_name}-linux-private-"
   image_id      = var.linux_ami_id
   instance_type = "t3.medium"
@@ -273,6 +275,8 @@ resource "aws_launch_template" "linux_private" {
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
     log_group              = var.log_group_name
+    app_debug              = var.app_debug ? "true" : "false"
+    runner_max_runtime     = var.runner_max_runtime
   }))
 
   tags = merge(
@@ -288,8 +292,6 @@ resource "aws_launch_template" "linux_private" {
 
 # Windows Private Launch Template
 resource "aws_launch_template" "windows_private" {
-  count = var.private_networking_enabled ? 1 : 0
-
   name_prefix   = "${var.stack_name}-windows-private-"
   image_id      = var.windows_ami_id
   instance_type = "t3.large"
@@ -368,6 +370,8 @@ resource "aws_launch_template" "windows_private" {
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
     log_group              = var.log_group_name
+    app_debug              = var.app_debug ? "true" : "false"
+    runner_max_runtime     = var.runner_max_runtime
   }))
 
   tags = merge(

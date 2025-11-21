@@ -143,14 +143,14 @@ variable "app_memory" {
   default     = 2048
 }
 
-variable "networking_stack" {
-  description = "Networking stack type"
+variable "private_mode" {
+  description = "Private networking mode: 'false', 'true', 'always', or 'only'"
   type        = string
-  default     = "external"
+  default     = "false"
 }
 
-variable "private_networking_enabled" {
-  description = "Enable private networking for App Runner"
+variable "app_debug" {
+  description = "Enable debug mode for RunsOn stack"
   type        = bool
   default     = false
 }
