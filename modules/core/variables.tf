@@ -6,6 +6,16 @@ variable "stack_name" {
   type        = string
 }
 
+variable "app_alarm_daily_minutes" {
+  description = "Daily budget in minutes for the App Runner service"
+  type        = number
+}
+
+variable "sqs_queue_oldest_message_threshold_seconds" {
+  description = "Threshold in seconds for oldest message in SQS queues"
+  type        = number
+}
+
 variable "environment" {
   description = "Environment name (e.g., prod, dev, staging)"
   type        = string
