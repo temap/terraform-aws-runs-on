@@ -340,14 +340,11 @@ resource "aws_apprunner_service" "this" {
       image_configuration {
         port = "8080"
 
-        # All environment variables including private launch templates
-        runtime_environment_variables = merge(
-          local.base_env_vars,
-          {
-            RUNS_ON_LAUNCH_TEMPLATE_LINUX_PRIVATE   = var.launch_template_linux_private_id
-            RUNS_ON_LAUNCH_TEMPLATE_WINDOWS_PRIVATE = var.launch_template_windows_private_id
-          }
-        )
+        # Non-sensitive environment variables
+        runtime_environment_variables = local.base_env_vars
+
+        # Sensitive environment variables fetched from SSM Parameter Store at runtime
+        runtime_environment_secrets = local.sensitive_env_secrets
       }
 
       image_identifier      = var.app_image
