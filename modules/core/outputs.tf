@@ -100,3 +100,13 @@ output "eventbridge_spot_interruption_rule_arn" {
   description = "ARN of the EventBridge spot interruption rule"
   value       = aws_cloudwatch_event_rule.spot_interruption.arn
 }
+
+output "app_alarm_arn" {
+  description = "ARN of the App Runner daily budget alarm"
+  value       = aws_cloudwatch_metric_alarm.app_daily_budget.arn
+}
+
+output "sqs_alarm_main_arn" {
+  description = "ARN of the SQS Main Queue oldest message alarm"
+  value       = var.sqs_queue_oldest_message_threshold_seconds > 0 ? aws_cloudwatch_metric_alarm.sqs_main_oldest_message[0].arn : null
+}

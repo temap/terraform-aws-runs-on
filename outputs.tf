@@ -15,9 +15,18 @@ output "aws_region" {
   value       = data.aws_region.current.name
 }
 
-output "stack_name" {
-  description = "RunsOn stack name"
-  value       = var.stack_name
+###########################
+# Alarm Outputs
+###########################
+
+output "app_alarm_arn" {
+  description = "ARN of the App Runner daily budget alarm"
+  value       = module.core.app_alarm_arn
+}
+
+output "sqs_alarm_main_arn" {
+  description = "ARN of the SQS Main Queue oldest message alarm"
+  value       = module.core.sqs_alarm_main_arn
 }
 
 ###########################

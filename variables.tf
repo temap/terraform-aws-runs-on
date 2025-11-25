@@ -5,10 +5,16 @@
 # General Configuration
 ###########################
 
-variable "aws_region" {
-  description = "AWS region to deploy resources"
-  type        = string
-  default     = "us-east-1"
+variable "app_alarm_daily_minutes" {
+  description = "Daily budget in minutes for the App Runner service before triggering an alarm"
+  type        = number
+  default     = 1440 # 24 hours
+}
+
+variable "sqs_queue_oldest_message_threshold_seconds" {
+  description = "Threshold in seconds for oldest message in SQS queues before triggering an alarm (0 to disable)"
+  type        = number
+  default     = 0
 }
 
 variable "stack_name" {

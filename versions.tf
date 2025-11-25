@@ -11,19 +11,3 @@ terraform {
     }
   }
 }
-
-provider "aws" {
-  region = var.aws_region
-
-  default_tags {
-    tags = merge(
-      var.tags,
-      {
-        ManagedBy   = "opentofu"
-        Module      = "runs-on"
-        StackName   = var.stack_name
-        Environment = var.environment
-      }
-    )
-  }
-}
