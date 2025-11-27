@@ -41,6 +41,20 @@ resource "aws_cloudformation_stack" "runs_on_mock" {
 }
 
 ###########################
+# Wait for NAT Gateway (Private Networking Only)
+# NAT gateways can take time to become fully operational after creation.
+# This delay ensures network connectivity is ready before App Runner starts.
+###########################
+
+resource "time_sleep" "wait_for_nat" {
+  count = var.private_mode != "false" ? 1 : 0
+
+  depends_on = [aws_cloudformation_stack.runs_on_mock]
+
+  create_duration = "60s"
+}
+
+###########################
 # Storage Module
 ###########################
 
@@ -232,6 +246,9 @@ module "core" {
 
   tags = var.tags
 
-  # Ensure CF stack exists before App Runner starts (app calls DescribeStacks on startup)
-  depends_on = [aws_cloudformation_stack.runs_on_mock]
+  # Ensure CF stack exists and NAT gateway is ready before App Runner starts
+  depends_on = [
+    aws_cloudformation_stack.runs_on_mock,
+    time_sleep.wait_for_nat
+  ]
 }
