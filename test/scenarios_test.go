@@ -2,10 +2,13 @@ package test
 
 import (
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestScenarioBasic tests the basic deployment scenario with all security and compliance validations
@@ -96,6 +99,68 @@ func TestScenarioBasic(t *testing.T) {
 	// ===== ADVANCED VALIDATIONS =====
 	t.Run("Advanced/AppRunnerHealth", func(t *testing.T) {
 		ValidateAppRunnerHealth(t, appRunnerURL, 10)
+	})
+
+	// ===== FUNCTIONAL VALIDATIONS =====
+	// These tests launch an EC2 instance and verify it can actually use the infrastructure
+	// Note: IAM policy allows:
+	//   - Cache bucket: read/write to cache/* prefix, read from runners/${aws:userid}/*
+	//   - Config bucket: read-only from agents/* prefix
+	t.Run("Functional", func(t *testing.T) {
+		// Get launch template ID for functional tests
+		launchTemplateID := terraform.Output(t, moduleOptions, "launch_template_linux_default_id")
+		require.NotEmpty(t, launchTemplateID, "Launch template ID should not be empty")
+
+		// Launch shared instance for all functional tests
+		instanceID := LaunchTestInstance(t, launchTemplateID, publicSubnets[0])
+		defer TerminateTestInstance(t, instanceID)
+
+		// Wait for instance to be SSM-ready
+		ready := WaitForInstanceReady(t, instanceID, 5*time.Minute)
+		require.True(t, ready, "Instance failed to become SSM-ready within timeout")
+
+		t.Run("S3Access", func(t *testing.T) {
+			// Validates all S3 IAM policy permissions:
+			// - CAN write/read cache/* in cache bucket
+			// - CAN read runners/{own-userid}/* in cache bucket
+			// - CAN read agents/* in config bucket
+			// - CANNOT write to runners/* or read other users' runners paths
+			ValidateS3AccessFromEC2(t, instanceID, cacheBucket, configBucket)
+		})
+
+		t.Run("CloudWatchLogging", func(t *testing.T) {
+			ValidateEC2CloudWatchLogs(t, instanceID, logGroupName)
+		})
+	})
+
+	// ===== INTEGRATION TESTS =====
+	// End-to-end job execution test
+	// Flow: Deploy infra -> User registers app -> Test polls for successful workflow with RunsOn
+	t.Run("Integration/JobExecution", func(t *testing.T) {
+		testRepo := os.Getenv("RUNS_ON_TEST_REPO")
+		testWorkflow := os.Getenv("RUNS_ON_TEST_WORKFLOW")
+		t.Logf("RUNS_ON_TEST_REPO = %q", testRepo)
+		t.Logf("RUNS_ON_TEST_WORKFLOW = %q", testWorkflow)
+		if testRepo == "" {
+			t.Skip("RUNS_ON_TEST_REPO not set - skipping integration test")
+		}
+		if testWorkflow == "" {
+			testWorkflow = "test.yml"
+		}
+
+		startTime := time.Now()
+
+		// Wait for RunsOn registration by polling for a workflow run with RunsOn in logs
+		// User must manually register at the AppRunner URL, then trigger a workflow
+		runID := WaitForRunsOnRegistration(t, appRunnerURL, testRepo, testWorkflow, 15*time.Minute)
+
+		// Verify workflow completed successfully
+		conclusion := WaitForWorkflowCompletion(t, testRepo, runID, 10*time.Minute)
+		assert.Equal(t, "success", conclusion, "Workflow should succeed")
+
+		// Validate runner was launched
+		launched := ValidateRunnerLaunched(t, stackName, startTime)
+		assert.True(t, launched, "Runner instance should have been launched")
 	})
 
 	fmt.Printf("\n✅ Basic scenario deployment successful!\n")
