@@ -52,7 +52,9 @@ jobs:
 
       - name: Download Go modules
         working-directory: test
-        run: go mod download
+        run: |
+          go mod tidy
+          go mod download
 
       - name: Run Basic Integration Test
         working-directory: test
