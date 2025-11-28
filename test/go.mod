@@ -8,7 +8,6 @@ require (
 	github.com/gruntwork-io/terratest v0.54.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/oauth2 v0.27.0
-	golang.org/x/term v0.37.0
 )
 
 require (
