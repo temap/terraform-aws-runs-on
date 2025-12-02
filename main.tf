@@ -91,7 +91,6 @@ module "compute" {
   security_group_ids = local.effective_security_group_ids
 
   # CloudWatch configuration
-  log_group_name     = var.log_group_name
   log_retention_days = var.log_retention_days
 
   # IAM configuration
@@ -100,10 +99,6 @@ module "compute" {
   # Application versioning
   app_tag       = var.app_tag
   bootstrap_tag = var.bootstrap_tag
-
-  # AMI configuration
-  linux_ami_id   = var.linux_ami_id
-  windows_ami_id = var.windows_ami_id
 
   # Instance configuration
   detailed_monitoring_enabled      = var.detailed_monitoring_enabled
@@ -127,9 +122,6 @@ module "compute" {
   enable_ecr             = var.enable_ecr
   ephemeral_registry_arn = var.enable_ecr ? module.optional.ecr_repository_arn : ""
   ephemeral_registry_uri = var.enable_ecr ? module.optional.ecr_repository_url : ""
-
-  # Custom policy
-  custom_policy_json = var.ec2_custom_policy_json
 
   tags = var.tags
 }

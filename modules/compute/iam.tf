@@ -125,8 +125,8 @@ resource "aws_iam_role_policy" "ec2_cloudwatch_logs" {
           "logs:PutRetentionPolicy"
         ]
         Resource = [
-          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group_name}",
-          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group_name}:*"
+          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:${local.log_group_name}",
+          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:${local.log_group_name}:*"
         ]
       }
     ]
@@ -375,15 +375,6 @@ resource "aws_iam_role_policy" "ec2_ecr_access" {
       }
     ]
   })
-}
-
-# Custom policy attachment (optional)
-resource "aws_iam_role_policy" "ec2_custom_policy" {
-  count = var.custom_policy_json != "" ? 1 : 0
-
-  name   = "CustomPolicy"
-  role   = aws_iam_role.ec2_instance.id
-  policy = var.custom_policy_json
 }
 
 # EC2 Instance Profile

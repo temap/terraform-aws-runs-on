@@ -7,8 +7,7 @@
 
 # Linux Default (Public) Launch Template
 resource "aws_launch_template" "linux_default" {
-  name = "${var.stack_name}-linux-default"
-  image_id      = var.linux_ami_id
+  name          = "${var.stack_name}-linux-default"
   instance_type = "t3.medium" # Placeholder, will be overridden at launch
 
   ebs_optimized                        = true
@@ -84,7 +83,7 @@ resource "aws_launch_template" "linux_default" {
     config_bucket          = var.config_bucket_name
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
-    log_group              = var.log_group_name
+    log_group              = local.log_group_name
     app_debug              = var.app_debug ? "true" : "false"
     runner_max_runtime     = var.runner_max_runtime
   }))
@@ -102,8 +101,7 @@ resource "aws_launch_template" "linux_default" {
 
 # Windows Default (Public) Launch Template
 resource "aws_launch_template" "windows_default" {
-  name = "${var.stack_name}-windows-default"
-  image_id      = var.windows_ami_id
+  name          = "${var.stack_name}-windows-default"
   instance_type = "t3.large" # Placeholder
 
   ebs_optimized                        = true
@@ -179,7 +177,7 @@ resource "aws_launch_template" "windows_default" {
     config_bucket          = var.config_bucket_name
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
-    log_group              = var.log_group_name
+    log_group              = local.log_group_name
     app_debug              = var.app_debug ? "true" : "false"
     runner_max_runtime     = var.runner_max_runtime
   }))
@@ -197,8 +195,7 @@ resource "aws_launch_template" "windows_default" {
 
 # Linux Private Launch Template
 resource "aws_launch_template" "linux_private" {
-  name = "${var.stack_name}-linux-private"
-  image_id      = var.linux_ami_id
+  name          = "${var.stack_name}-linux-private"
   instance_type = "t3.medium"
 
   ebs_optimized                        = true
@@ -274,7 +271,7 @@ resource "aws_launch_template" "linux_private" {
     config_bucket          = var.config_bucket_name
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
-    log_group              = var.log_group_name
+    log_group              = local.log_group_name
     app_debug              = var.app_debug ? "true" : "false"
     runner_max_runtime     = var.runner_max_runtime
   }))
@@ -292,8 +289,7 @@ resource "aws_launch_template" "linux_private" {
 
 # Windows Private Launch Template
 resource "aws_launch_template" "windows_private" {
-  name = "${var.stack_name}-windows-private"
-  image_id      = var.windows_ami_id
+  name          = "${var.stack_name}-windows-private"
   instance_type = "t3.large"
 
   ebs_optimized                        = true
@@ -369,7 +365,7 @@ resource "aws_launch_template" "windows_private" {
     config_bucket          = var.config_bucket_name
     cache_bucket           = var.cache_bucket_name
     region                 = data.aws_region.current.name
-    log_group              = var.log_group_name
+    log_group              = local.log_group_name
     app_debug              = var.app_debug ? "true" : "false"
     runner_max_runtime     = var.runner_max_runtime
   }))

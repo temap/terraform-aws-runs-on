@@ -18,11 +18,12 @@ data "aws_region" "current" {}
 
 # Local variables
 locals {
+  log_group_name = "${var.stack_name}/ec2/instances"
+
   common_tags = merge(
     var.tags,
     {
-      ManagedBy = "opentofu"
-      Module    = "runs-on-compute"
+      Module = "runs-on-compute"
     }
   )
 }

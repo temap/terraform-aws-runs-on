@@ -17,15 +17,10 @@ data "aws_caller_identity" "current" {}
 
 # Local variables
 locals {
-  config_bucket_name  = "${var.stack_name}-config-${data.aws_caller_identity.current.account_id}"
-  cache_bucket_name   = "${var.stack_name}-cache-${data.aws_caller_identity.current.account_id}"
-  logging_bucket_name = "${var.stack_name}-logging-${data.aws_caller_identity.current.account_id}"
-
   common_tags = merge(
     var.tags,
     {
-      ManagedBy = "opentofu"
-      Module    = "runs-on-storage"
+      Module = "runs-on-storage"
     }
   )
 }

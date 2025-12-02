@@ -43,12 +43,6 @@ variable "security_group_ids" {
   type        = list(string)
 }
 
-variable "log_group_name" {
-  description = "CloudWatch log group name for EC2 instances"
-  type        = string
-  default     = "/runs-on/ec2"
-}
-
 variable "log_retention_days" {
   description = "Days to retain CloudWatch logs"
   type        = number
@@ -71,18 +65,6 @@ variable "bootstrap_tag" {
   description = "Bootstrap script version tag"
   type        = string
   default     = "v0.1.12"
-}
-
-variable "linux_ami_id" {
-  description = "AMI ID for Linux runners"
-  type        = string
-  default     = ""
-}
-
-variable "windows_ami_id" {
-  description = "AMI ID for Windows runners"
-  type        = string
-  default     = ""
 }
 
 variable "detailed_monitoring_enabled" {
@@ -159,12 +141,6 @@ variable "ephemeral_registry_arn" {
 
 variable "ephemeral_registry_uri" {
   description = "ECR repository URI (optional)"
-  type        = string
-  default     = ""
-}
-
-variable "custom_policy_json" {
-  description = "Custom IAM policy JSON (optional)"
   type        = string
   default     = ""
 }

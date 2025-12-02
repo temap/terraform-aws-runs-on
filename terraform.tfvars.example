@@ -96,6 +96,3 @@ tags = {
 # IAM Permissions Boundary (if required by your organization)
 # permission_boundary_arn = "arn:aws:iam::123456789012:policy/YourPermissionBoundary"
 
-# Custom AMIs (if you want to use your own AMIs instead of RunsOn defaults)
-# linux_ami_id   = "ami-xxxxxxxxxxxx"
-# windows_ami_id = "ami-yyyyyyyyyyyy"

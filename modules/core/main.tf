@@ -21,8 +21,7 @@ locals {
   common_tags = merge(
     var.tags,
     {
-      ManagedBy = "opentofu"
-      Module    = "runs-on-core"
+      Module = "runs-on-core"
     }
   )
 

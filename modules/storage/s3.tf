@@ -6,7 +6,7 @@
 #######################
 
 resource "aws_s3_bucket" "logging" {
-  bucket        = local.logging_bucket_name
+  bucket_prefix = "${var.stack_name}-logging-"
   force_destroy = var.force_destroy_buckets
 
   tags = merge(
@@ -131,8 +131,8 @@ resource "aws_s3_bucket_policy" "logging" {
           }
           ArnLike = {
             "aws:SourceArn" = [
-              "arn:aws:s3:::${local.config_bucket_name}",
-              "arn:aws:s3:::${local.cache_bucket_name}"
+              aws_s3_bucket.config.arn,
+              aws_s3_bucket.cache.arn
             ]
           }
         }
@@ -146,7 +146,7 @@ resource "aws_s3_bucket_policy" "logging" {
 #######################
 
 resource "aws_s3_bucket" "config" {
-  bucket        = local.config_bucket_name
+  bucket_prefix = "${var.stack_name}-config-"
   force_destroy = var.force_destroy_buckets
 
   tags = merge(
@@ -285,7 +285,7 @@ resource "aws_s3_bucket_policy" "config" {
 #######################
 
 resource "aws_s3_bucket" "cache" {
-  bucket        = local.cache_bucket_name
+  bucket_prefix = "${var.stack_name}-cache-"
   force_destroy = var.force_destroy_buckets
 
   tags = merge(

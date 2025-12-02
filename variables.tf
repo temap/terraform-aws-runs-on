@@ -41,9 +41,11 @@ variable "cost_allocation_tag" {
 }
 
 variable "tags" {
-  description = "Additional tags to apply to all resources"
+  description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {}
+  default = {
+    ManagedBy = "opentofu"
+  }
 }
 
 ###########################
@@ -150,12 +152,6 @@ variable "force_delete_ecr" {
 # Compute Configuration
 ###########################
 
-variable "log_group_name" {
-  description = "CloudWatch log group name for EC2 instances"
-  type        = string
-  default     = "/runs-on/ec2"
-}
-
 variable "log_retention_days" {
   description = "Number of days to retain CloudWatch logs for EC2 instances"
   type        = number
@@ -169,18 +165,6 @@ variable "log_retention_days" {
 
 variable "permission_boundary_arn" {
   description = "IAM permissions boundary ARN to attach to all IAM roles (optional)"
-  type        = string
-  default     = ""
-}
-
-variable "linux_ami_id" {
-  description = "AMI ID for Linux runners (leave empty for RunsOn default)"
-  type        = string
-  default     = ""
-}
-
-variable "windows_ami_id" {
-  description = "AMI ID for Windows runners (leave empty for RunsOn default)"
   type        = string
   default     = ""
 }
@@ -215,8 +199,8 @@ variable "runner_default_disk_size" {
   default     = 40
 
   validation {
-    condition     = var.runner_default_disk_size >= 20 && var.runner_default_disk_size <= 16384
-    error_message = "Disk size must be between 20 GB and 16384 GB."
+    condition     = var.runner_default_disk_size >= 8 && var.runner_default_disk_size <= 16384
+    error_message = "Disk size must be between 8 GB and 16384 GB."
   }
 }
 
@@ -251,12 +235,6 @@ variable "runner_large_volume_throughput" {
     condition     = var.runner_large_volume_throughput >= 125 && var.runner_large_volume_throughput <= 1000
     error_message = "Large volume throughput must be between 125 and 1000 MiB/s for gp3 volumes."
   }
-}
-
-variable "ec2_custom_policy_json" {
-  description = "Custom IAM policy JSON to attach to EC2 instance role (optional)"
-  type        = string
-  default     = ""
 }
 
 ###########################
