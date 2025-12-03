@@ -108,6 +108,7 @@ func (c ScenarioConfig) ToModuleVars(vpcID string, publicSubnets, privateSubnets
 		"enable_efs":                         c.EnableEFS,
 		"enable_ecr":                         c.EnableECR,
 		"environment":                        "test",
+		"email":                              "test@example.com",
 		"log_retention_days":                 1,
 		"cache_expiration_days":              1,
 		"detailed_monitoring_enabled":        false,

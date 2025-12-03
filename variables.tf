@@ -424,7 +424,6 @@ variable "logger_level" {
 variable "email" {
   description = "Email address for alerts and notifications (requires confirmation)"
   type        = string
-  default     = ""
 }
 
 variable "alert_https_endpoint" {

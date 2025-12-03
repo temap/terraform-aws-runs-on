@@ -1,6 +1,3 @@
-# main.tf
-# Root module for RunsOn infrastructure - orchestrates all submodules
-
 ###########################
 # CloudFormation Stack for CLI Compatibility
 # Exposes all outputs that the RunsOn CLI expects from a CloudFormation deployment
@@ -8,10 +5,6 @@
 
 resource "aws_cloudformation_stack" "runs_on_mock" {
   name = var.stack_name
-
-  # This minimal stack must be created BEFORE App Runner because the RunsOn app
-  # calls DescribeStacks on startup. This is temporary until the app/CLI are
-  # updated to support OpenTofu deployments natively.
 
   template_body = jsonencode({
     AWSTemplateFormatVersion = "2010-09-09"
@@ -25,8 +18,7 @@ resource "aws_cloudformation_stack" "runs_on_mock" {
 
     Outputs = {
       ManagedBy = {
-        Value       = "Terraform"
-        Description = "Infrastructure management tool"
+        Value = "OpenTofu"
       }
     }
   })
@@ -34,8 +26,7 @@ resource "aws_cloudformation_stack" "runs_on_mock" {
   tags = merge(
     var.tags,
     {
-      Name      = var.stack_name
-      ManagedBy = "Terraform"
+      Name = var.stack_name
     }
   )
 }
@@ -235,7 +226,7 @@ module "core" {
   # Monitoring
   enable_dashboard = var.enable_dashboard
 
-  # New Alarms (Parity)
+  # Alarms
   app_alarm_daily_minutes                    = var.app_alarm_daily_minutes
   sqs_queue_oldest_message_threshold_seconds = var.sqs_queue_oldest_message_threshold_seconds
 

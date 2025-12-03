@@ -90,6 +90,7 @@ No modules.
 | <a name="input_ec2_instance_profile_arn"></a> [ec2\_instance\_profile\_arn](#input\_ec2\_instance\_profile\_arn) | ARN of the EC2 instance profile | `string` | n/a | yes |
 | <a name="input_ec2_instance_role_arn"></a> [ec2\_instance\_role\_arn](#input\_ec2\_instance\_role\_arn) | ARN of the EC2 instance IAM role | `string` | n/a | yes |
 | <a name="input_ec2_instance_role_name"></a> [ec2\_instance\_role\_name](#input\_ec2\_instance\_role\_name) | Name of the EC2 instance IAM role | `string` | n/a | yes |
+| <a name="input_email"></a> [email](#input\_email) | Email address for alerts | `string` | n/a | yes |
 | <a name="input_github_organization"></a> [github\_organization](#input\_github\_organization) | GitHub organization or username | `string` | n/a | yes |
 | <a name="input_launch_template_linux_default_id"></a> [launch\_template\_linux\_default\_id](#input\_launch\_template\_linux\_default\_id) | ID of the Linux default launch template | `string` | n/a | yes |
 | <a name="input_launch_template_windows_default_id"></a> [launch\_template\_windows\_default\_id](#input\_launch\_template\_windows\_default\_id) | ID of the Windows default launch template | `string` | n/a | yes |
@@ -111,7 +112,6 @@ No modules.
 | <a name="input_default_admins"></a> [default\_admins](#input\_default\_admins) | Default admins | `string` | `""` | no |
 | <a name="input_ebs_encryption_key_id"></a> [ebs\_encryption\_key\_id](#input\_ebs\_encryption\_key\_id) | KMS key ID for EBS encryption | `string` | `""` | no |
 | <a name="input_ec2_queue_size"></a> [ec2\_queue\_size](#input\_ec2\_queue\_size) | EC2 queue size | `number` | `2` | no |
-| <a name="input_email"></a> [email](#input\_email) | Email address for alerts | `string` | `""` | no |
 | <a name="input_enable_cost_reports"></a> [enable\_cost\_reports](#input\_enable\_cost\_reports) | Enable automated cost reports | `bool` | `true` | no |
 | <a name="input_enable_dashboard"></a> [enable\_dashboard](#input\_enable\_dashboard) | Create a CloudWatch dashboard for monitoring RunsOn operations | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., prod, dev, staging) | `string` | `"production"` | no |

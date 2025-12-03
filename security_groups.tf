@@ -19,8 +19,7 @@ resource "aws_security_group" "runners" {
   tags = merge(
     var.tags,
     {
-      Name      = "${var.stack_name}-runners"
-      ManagedBy = "opentofu"
+      Name = "${var.stack_name}-runners"
     }
   )
 
@@ -44,8 +43,7 @@ resource "aws_vpc_security_group_ingress_rule" "ssh" {
   tags = merge(
     var.tags,
     {
-      Name      = "${var.stack_name}-ssh-ingress"
-      ManagedBy = "opentofu"
+      Name = "${var.stack_name}-ssh-ingress"
     }
   )
 }
@@ -63,8 +61,7 @@ resource "aws_vpc_security_group_egress_rule" "all_ipv4" {
   tags = merge(
     var.tags,
     {
-      Name      = "${var.stack_name}-egress-ipv4"
-      ManagedBy = "opentofu"
+      Name = "${var.stack_name}-egress-ipv4"
     }
   )
 }
@@ -82,8 +79,7 @@ resource "aws_vpc_security_group_egress_rule" "all_ipv6" {
   tags = merge(
     var.tags,
     {
-      Name      = "${var.stack_name}-egress-ipv6"
-      ManagedBy = "opentofu"
+      Name = "${var.stack_name}-egress-ipv6"
     }
   )
 }
