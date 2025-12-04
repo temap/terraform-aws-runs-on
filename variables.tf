@@ -115,7 +115,7 @@ variable "private_mode" {
   }
 
   validation {
-    condition     = var.private_mode != "false" || length(var.private_subnet_ids) > 0
+    condition     = var.private_mode == "false" || length(var.private_subnet_ids) > 0
     error_message = "At least one private subnet ID is required for private networking."
   }
 }
