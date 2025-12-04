@@ -2,21 +2,65 @@
 
 Deploy [RunsOn](https://runs-on.com) self-hosted GitHub Actions runners on AWS with Terraform/OpenTofu.
 
-## Quick Start
+## Usage
 
 ```hcl
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Get available AZs
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# VPC Module - Creates networking infrastructure
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+
+  name = "runs-on-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
+  # NAT Gateway for private subnets (required for private networking)
+  # enable_nat_gateway = true
+  # single_nat_gateway = true
+
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+}
+
+# RunsOn Module - Deploys RunsOn infrastructure with smart defaults
 module "runs_on" {
   source = "git::https://github.com/runs-on/terraform-aws-runs-on.git"
 
+  # Required: GitHub and License
   github_organization = "my-org"
-  license_key         = var.runs_on_license_key
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
 
-  vpc_id            = "vpc-123"
-  public_subnet_ids = ["subnet-abc", "subnet-def", "subnet-ghi"]
+  # Required: Network configuration (BYOV - Bring Your Own VPC)
+  vpc_id             = module.vpc.vpc_id
+  public_subnet_ids  = module.vpc.public_subnets
+  private_subnet_ids = module.vpc.private_subnets
 }
 ```
-
-You provide the VPC and subnets. The module creates everything else: App Runner, S3 buckets, SQS queues, DynamoDB tables, IAM roles, and EC2 launch templates.
+The module assumes you have your own VPC already configured.
 
 ## Examples
 
@@ -28,17 +72,116 @@ You provide the VPC and subnets. The module creates everything else: App Runner,
 | [ecr-enabled](./examples/ecr-enabled/) | Docker BuildKit cache | ~$32/mo |
 | [full-featured](./examples/full-featured/) | All features | ~$175/mo |
 
-## Optional Features
+### Basic
+
+Standard deployment with smart defaults:
 
 ```hcl
-# Private networking (static egress IPs)
-private_subnet_ids = ["subnet-private-1", "subnet-private-2", "subnet-private-3"]
+module "runs_on" {
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git"
 
-# Shared storage across runners
-enable_efs = true
+  github_organization = "my-org"
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
 
-# Docker layer caching
-enable_ecr = true
+  vpc_id            = "vpc-xxxxxxxx"
+  public_subnet_ids = ["subnet-pub1", "subnet-pub2", "subnet-pub3"]
+}
+```
+
+### Private Networking
+
+Enable private networking for static egress IPs (requires NAT Gateway):
+
+```hcl
+module "runs_on" {
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git"
+
+  github_organization = "my-org"
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
+
+  vpc_id             = "vpc-xxxxxxxx"
+  public_subnet_ids  = ["subnet-pub1", "subnet-pub2", "subnet-pub3"]
+  private_subnet_ids = ["subnet-priv1", "subnet-priv2", "subnet-priv3"]
+
+  # Private networking mode options:
+  #   "false"  - Disabled (default)
+  #   "true"   - Opt-in: runners can use private=true label
+  #   "always" - Default with opt-out: runners use private by default
+  #   "only"   - Forced: all runners must use private subnets
+  private_mode = "true"
+}
+```
+
+### EFS Enabled
+
+Enable shared persistent storage across all runners for storing and sharing large files/artifacts:
+
+```hcl
+module "runs_on" {
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git"
+
+  github_organization = "my-org"
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
+
+  vpc_id            = "vpc-xxxxxxxx"
+  public_subnet_ids = ["subnet-pub1", "subnet-pub2", "subnet-pub3"]
+
+  # Enables persistent shared filesystem across all runners
+  enable_efs = true
+}
+```
+
+### ECR Enabled
+
+Enable image cache across workflow jobs, including Docker build cache:
+
+```hcl
+module "runs_on" {
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git"
+
+  github_organization = "my-org"
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
+
+  vpc_id            = "vpc-xxxxxxxx"
+  public_subnet_ids = ["subnet-pub1", "subnet-pub2", "subnet-pub3"]
+
+  # Creates private ECR for build cache
+  enable_ecr = true
+}
+```
+
+### Full Featured
+
+All features enabled together:
+
+```hcl
+module "runs_on" {
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git"
+
+  github_organization = "my-org"
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
+
+  vpc_id             = "vpc-xxxxxxxx"
+  public_subnet_ids  = ["subnet-pub1", "subnet-pub2", "subnet-pub3"]
+  private_subnet_ids = ["subnet-priv1", "subnet-priv2", "subnet-priv3"]
+
+  # Private networking (opt-in mode)
+  private_mode = "true"
+
+  # EFS shared storage
+  enable_efs = true
+
+  # ECR container registry
+  enable_ecr = true
+
+  # CloudWatch dashboard for monitoring
+  enable_dashboard = true
+}
 ```
 
 <!-- BEGIN_TF_DOCS -->
@@ -175,7 +318,6 @@ enable_ecr = true
 | <a name="output_logging_bucket_name"></a> [logging\_bucket\_name](#output\_logging\_bucket\_name) | S3 bucket name for access logs |
 | <a name="output_resource_group_name"></a> [resource\_group\_name](#output\_resource\_group\_name) | Name of the EC2 resource group for cost tracking |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | ID of the created security group (null if using provided security groups) |
-| <a name="output_slack_webhook_lambda_arn"></a> [slack\_webhook\_lambda\_arn](#output\_slack\_webhook\_lambda\_arn) | ARN of the Slack webhook Lambda function (if Slack webhook URL provided) |
 | <a name="output_sns_topic_arn"></a> [sns\_topic\_arn](#output\_sns\_topic\_arn) | ARN of the SNS alerts topic |
 | <a name="output_sns_topic_name"></a> [sns\_topic\_name](#output\_sns\_topic\_name) | Name of the SNS alerts topic |
 | <a name="output_sqs_alarm_main_arn"></a> [sqs\_alarm\_main\_arn](#output\_sqs\_alarm\_main\_arn) | ARN of the SQS Main Queue oldest message alarm |
