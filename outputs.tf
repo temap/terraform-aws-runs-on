@@ -21,46 +21,17 @@ output "aws_region" {
 }
 
 ###########################
-# Alarm Outputs
-###########################
-
-output "app_alarm_arn" {
-  description = "ARN of the App Runner daily budget alarm"
-  value       = module.core.app_alarm_arn
-}
-
-output "sqs_alarm_main_arn" {
-  description = "ARN of the SQS Main Queue oldest message alarm"
-  value       = module.core.sqs_alarm_main_arn
-}
-
-###########################
 # Storage Outputs
 ###########################
-
-output "config_bucket_name" {
-  description = "S3 bucket name for configuration storage"
-  value       = module.storage.config_bucket_name
-}
 
 output "config_bucket_arn" {
   description = "ARN of the S3 configuration bucket"
   value       = module.storage.config_bucket_arn
 }
 
-output "cache_bucket_name" {
-  description = "S3 bucket name for cache storage"
-  value       = module.storage.cache_bucket_name
-}
-
 output "cache_bucket_arn" {
   description = "ARN of the S3 cache bucket"
   value       = module.storage.cache_bucket_arn
-}
-
-output "logging_bucket_name" {
-  description = "S3 bucket name for access logs"
-  value       = module.storage.logging_bucket_name
 }
 
 ###########################
@@ -80,6 +51,11 @@ output "ec2_instance_role_arn" {
 output "ec2_instance_profile_arn" {
   description = "ARN of the EC2 instance profile"
   value       = module.compute.ec2_instance_profile_arn
+}
+
+output "ec2_instance_log_group_name" {
+  description = "CloudWatch log group name for EC2 instances"
+  value       = module.compute.log_group_name
 }
 
 output "launch_template_linux_default_id" {
@@ -102,23 +78,8 @@ output "launch_template_windows_private_id" {
   value       = module.compute.launch_template_windows_private_id
 }
 
-output "log_group_name" {
-  description = "CloudWatch log group name for EC2 instances"
-  value       = module.compute.log_group_name
-}
-
-output "resource_group_name" {
-  description = "Name of the EC2 resource group for cost tracking"
-  value       = module.compute.resource_group_name
-}
-
-output "security_group_id" {
-  description = "ID of the created security group (null if using provided security groups)"
-  value       = local.create_security_group ? aws_security_group.runners[0].id : null
-}
-
-output "effective_security_group_ids" {
-  description = "Effective security group IDs being used (created or provided)"
+output "security_group_ids" {
+  description = "Security group IDs being used (created or provided)"
   value       = local.effective_security_group_ids
 }
 
@@ -150,11 +111,6 @@ output "apprunner_log_group_name" {
 output "sns_topic_arn" {
   description = "ARN of the SNS alerts topic"
   value       = module.core.sns_topic_arn
-}
-
-output "sns_topic_name" {
-  description = "Name of the SNS alerts topic"
-  value       = module.core.sns_topic_name
 }
 
 ###########################
