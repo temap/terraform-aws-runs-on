@@ -85,7 +85,12 @@ flowchart TB
             S3["S3 Buckets<br/><i>Config & Cache</i>"]
             EC2["EC2 Launch Templates<br/><i>Linux & Windows</i>"]
             IAM["IAM Roles<br/><i>Permissions</i>"]
-            SNS["SNS Topics<br/><i>Alerts</i>"]
+            
+            subgraph Monitoring["Monitoring"]
+                SNS["SNS Topics<br/><i>Alerts</i>"]
+                CWLogs["CloudWatch Logs"]
+                CWDashboard["CloudWatch Dashboard<br/>"]
+            end
         end
 
         subgraph Optional["Optional Plug-ins"]
@@ -93,7 +98,7 @@ flowchart TB
             EFS["EFS<br/><i>Shared Storage</i>"]
             ECR["ECR<br/><i>Image Cache</i>"]
             Private["Private Networking<br/><i>NAT Gateway</i>"]
-            Dashboard["CloudWatch Dashboard<br/><i>Monitoring</i>"]
+            OTEL["OTEL / Prometheus<br/><i>Metrics Export</i>"]
         end
 
         VPC["VPC & Subnets"]
@@ -108,6 +113,8 @@ flowchart TB
     AppRunner --> S3
     AppRunner -->|launches| EC2
     EC2 --> IAM
+    AppRunner --> CWLogs
+    EC2 --> CWLogs
     SNS -.-> Alerts
 
     VPC -.->|network| Core
@@ -115,11 +122,12 @@ flowchart TB
     EFS -.->|enable_efs| EC2
     ECR -.->|enable_ecr| EC2
     Private -.->|private_mode| EC2
-    Dashboard -.->|enable_dashboard| AppRunner
+    OTEL -.->|otel_exporter_endpoint| AppRunner
 
-    style AWS fill:transparent,stroke:#888
-    style Core fill:transparent,stroke:#0969da
-    style Optional fill:transparent,stroke:#d29922
+    style AWS fill:#8881,stroke:#888
+    style Core fill:#0969da22,stroke:#0969da
+    style Optional fill:#d2992222,stroke:#d29922
+    style Monitoring fill:#23863622,stroke:#238636
 ```
 
 # Examples
