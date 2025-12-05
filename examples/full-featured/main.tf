@@ -40,6 +40,22 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
+  # VPC Endpoints
+  # Enable only if you're using private networking in RunsOn for full intra-VPC traffic to AWS APIs (avoids NAT Gateway data transfer costs).
+
+  # S3 gateway endpoint is free and recommended
+  enable_s3_endpoint = true
+
+  # ECR endpoints are useful if you push/pull lots of images (enable_ecr = true)
+  enable_ecr_api_endpoint = false # For ECR API calls
+  enable_ecr_dkr_endpoint = false # For ECR image pulls
+
+  # Interface endpoints below cost ~$7/mo each.
+  enable_ec2_endpoint         = false # For EC2 API calls
+  enable_logs_endpoint        = false # For CloudWatch Logs
+  enable_ssm_endpoint         = false # For SSM access
+  enable_ssmmessages_endpoint = false # For SSM Session Manager
+
   tags = {
     Environment = "production"
     ManagedBy   = "OpenTofu"
