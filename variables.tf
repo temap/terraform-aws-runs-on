@@ -469,5 +469,5 @@ variable "prevent_destroy_optional_resources" {
 variable "enable_dashboard" {
   description = "Create a CloudWatch dashboard for monitoring RunsOn operations (number of jobs processed, rate limit status, last error messages, etc.)"
   type        = bool
-  default     = false
+  default     = true
 }

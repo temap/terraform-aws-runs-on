@@ -319,5 +319,5 @@ variable "tags" {
 variable "enable_dashboard" {
   description = "Create a CloudWatch dashboard for monitoring RunsOn operations"
   type        = bool
-  default     = false
+  default     = true
 }
