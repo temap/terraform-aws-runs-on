@@ -14,8 +14,9 @@ resource "aws_efs_file_system" "this_protected" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-efs"
-      Environment = var.environment
+      Name               = "${var.stack_name}-efs"
+      Environment        = var.environment
+      "runs-on-resource" = "efs-filesystem" # Used for resource discovery
     }
   )
 
@@ -33,8 +34,9 @@ resource "aws_efs_file_system" "this_unprotected" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-efs"
-      Environment = var.environment
+      Name               = "${var.stack_name}-efs"
+      Environment        = var.environment
+      "runs-on-resource" = "efs-filesystem" # Used for resource discovery
     }
   )
 }
@@ -67,8 +69,9 @@ resource "aws_security_group" "efs" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-efs-sg"
-      Environment = var.environment
+      Name               = "${var.stack_name}-efs-sg"
+      Environment        = var.environment
+      "runs-on-resource" = "efs-security-group" # Used for resource discovery
     }
   )
 }

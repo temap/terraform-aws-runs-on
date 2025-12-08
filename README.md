@@ -72,6 +72,11 @@ Cost Estimates:
 > - **ECR:** ~$0.10/GB-month for storage
 > - **Runners:** EC2 costs vary by instance type and usage (pay only for what you use)
 
+## Resource Tags
+
+All resources are tagged with `runs-on-stack-name` and `runs-on-resource` for 
+discovery by the CLI and App Runner service. Do not remove these tags.
+
 # Architecture
 
 ```mermaid

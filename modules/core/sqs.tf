@@ -13,9 +13,10 @@ resource "aws_sqs_queue" "main_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-main-dlq"
-      Environment = var.environment
-      QueueType   = "dead-letter"
+      Name               = "${var.stack_name}-main-dlq"
+      Environment        = var.environment
+      QueueType          = "dead-letter"
+      "runs-on-resource" = "dlq-main" # Used for resource discovery
     }
   )
 }
@@ -28,9 +29,10 @@ resource "aws_sqs_queue" "jobs_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-jobs-dlq"
-      Environment = var.environment
-      QueueType   = "dead-letter"
+      Name               = "${var.stack_name}-jobs-dlq"
+      Environment        = var.environment
+      QueueType          = "dead-letter"
+      "runs-on-resource" = "dlq-jobs" # Used for resource discovery
     }
   )
 }
@@ -43,9 +45,10 @@ resource "aws_sqs_queue" "github_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-github-dlq"
-      Environment = var.environment
-      QueueType   = "dead-letter"
+      Name               = "${var.stack_name}-github-dlq"
+      Environment        = var.environment
+      QueueType          = "dead-letter"
+      "runs-on-resource" = "dlq-github" # Used for resource discovery
     }
   )
 }
@@ -57,9 +60,10 @@ resource "aws_sqs_queue" "pool_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-pool-dlq"
-      Environment = var.environment
-      QueueType   = "dead-letter"
+      Name               = "${var.stack_name}-pool-dlq"
+      Environment        = var.environment
+      QueueType          = "dead-letter"
+      "runs-on-resource" = "dlq-pool" # Used for resource discovery
     }
   )
 }
@@ -84,9 +88,10 @@ resource "aws_sqs_queue" "main" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-main"
-      Environment = var.environment
-      QueueType   = "main"
+      Name               = "${var.stack_name}-main"
+      Environment        = var.environment
+      QueueType          = "main"
+      "runs-on-resource" = "queue-main" # Used for resource discovery
     }
   )
 }
@@ -107,9 +112,10 @@ resource "aws_sqs_queue" "jobs" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-jobs"
-      Environment = var.environment
-      QueueType   = "jobs"
+      Name               = "${var.stack_name}-jobs"
+      Environment        = var.environment
+      QueueType          = "jobs"
+      "runs-on-resource" = "queue-jobs" # Used for resource discovery
     }
   )
 }
@@ -130,9 +136,10 @@ resource "aws_sqs_queue" "github" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-github"
-      Environment = var.environment
-      QueueType   = "github"
+      Name               = "${var.stack_name}-github"
+      Environment        = var.environment
+      QueueType          = "github"
+      "runs-on-resource" = "queue-github" # Used for resource discovery
     }
   )
 }
@@ -151,9 +158,10 @@ resource "aws_sqs_queue" "pool" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-pool"
-      Environment = var.environment
-      QueueType   = "pool"
+      Name               = "${var.stack_name}-pool"
+      Environment        = var.environment
+      QueueType          = "pool"
+      "runs-on-resource" = "queue-pool" # Used for resource discovery
     }
   )
 }
@@ -167,9 +175,10 @@ resource "aws_sqs_queue" "housekeeping" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-housekeeping"
-      Environment = var.environment
-      QueueType   = "housekeeping"
+      Name               = "${var.stack_name}-housekeeping"
+      Environment        = var.environment
+      QueueType          = "housekeeping"
+      "runs-on-resource" = "queue-housekeeping" # Used for resource discovery
     }
   )
 }
@@ -183,9 +192,10 @@ resource "aws_sqs_queue" "termination" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-termination"
-      Environment = var.environment
-      QueueType   = "termination"
+      Name               = "${var.stack_name}-termination"
+      Environment        = var.environment
+      QueueType          = "termination"
+      "runs-on-resource" = "queue-termination" # Used for resource discovery
     }
   )
 }
@@ -199,9 +209,10 @@ resource "aws_sqs_queue" "events" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-events"
-      Environment = var.environment
-      QueueType   = "events"
+      Name               = "${var.stack_name}-events"
+      Environment        = var.environment
+      QueueType          = "events"
+      "runs-on-resource" = "queue-events" # Used for resource discovery
     }
   )
 }

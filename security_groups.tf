@@ -17,9 +17,10 @@ resource "aws_security_group" "runners" {
   vpc_id      = var.vpc_id
 
   tags = merge(
-    var.tags,
+    local.common_tags,
     {
-      Name = "${var.stack_name}-runners"
+      Name               = "${var.stack_name}-runners"
+      "runs-on-resource" = "sg-runners" # Used for resource discovery
     }
   )
 
@@ -41,7 +42,7 @@ resource "aws_vpc_security_group_ingress_rule" "ssh" {
   cidr_ipv4   = var.ssh_cidr_range
 
   tags = merge(
-    var.tags,
+    local.common_tags,
     {
       Name = "${var.stack_name}-ssh-ingress"
     }
@@ -59,7 +60,7 @@ resource "aws_vpc_security_group_egress_rule" "all_ipv4" {
   cidr_ipv4   = "0.0.0.0/0"
 
   tags = merge(
-    var.tags,
+    local.common_tags,
     {
       Name = "${var.stack_name}-egress-ipv4"
     }
@@ -77,7 +78,7 @@ resource "aws_vpc_security_group_egress_rule" "all_ipv6" {
   cidr_ipv6   = "::/0"
 
   tags = merge(
-    var.tags,
+    local.common_tags,
     {
       Name = "${var.stack_name}-egress-ipv6"
     }

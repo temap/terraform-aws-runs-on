@@ -12,6 +12,15 @@ data "aws_region" "current" {}
 locals {
   region     = data.aws_region.current.region
   account_id = data.aws_caller_identity.current.account_id
+
+  # Tags for all resources. Used by CLI and App Runner for resource discovery.
+  # Do not remove "runs-on-stack-name" tag.
+  common_tags = merge(
+    var.tags,
+    {
+      "runs-on-stack-name" = var.stack_name
+    }
+  )
 }
 
 ###########################
@@ -40,9 +49,10 @@ resource "aws_cloudformation_stack" "runs_on_mock" {
   })
 
   tags = merge(
-    var.tags,
+    local.common_tags,
     {
-      Name = var.stack_name
+      Name               = var.stack_name
+      "runs-on-resource" = "cloudformation-mock" # Used for resource discovery
     }
   )
 }
@@ -74,7 +84,7 @@ module "storage" {
   cache_expiration_days = var.cache_expiration_days
   force_destroy_buckets = var.force_destroy_buckets
 
-  tags = var.tags
+  tags = local.common_tags
 }
 
 ###########################
@@ -134,7 +144,7 @@ module "compute" {
   ephemeral_registry_arn = var.enable_ecr ? module.optional.ecr_repository_arn : ""
   ephemeral_registry_uri = var.enable_ecr ? module.optional.ecr_repository_url : ""
 
-  tags = var.tags
+  tags = local.common_tags
 }
 
 ###########################
@@ -160,7 +170,7 @@ module "optional" {
   public_subnet_ids  = var.public_subnet_ids
   security_group_ids = local.effective_security_group_ids
 
-  tags = var.tags
+  tags = local.common_tags
 }
 
 ###########################
@@ -254,7 +264,7 @@ module "core" {
   app_alarm_daily_minutes                    = var.app_alarm_daily_minutes
   sqs_queue_oldest_message_threshold_seconds = var.sqs_queue_oldest_message_threshold_seconds
 
-  tags = var.tags
+  tags = local.common_tags
 
   # Ensure CloudFormation stack exists and NAT gateway is ready before App Runner starts
   depends_on = [

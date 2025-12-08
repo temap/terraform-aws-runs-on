@@ -12,9 +12,10 @@ resource "aws_sns_topic" "alerts" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-alerts"
-      Environment = var.environment
-      TopicType   = "alerts"
+      Name               = "${var.stack_name}-alerts"
+      Environment        = var.environment
+      TopicType          = "alerts"
+      "runs-on-resource" = "sns-alerts" # Used for resource discovery
     }
   )
 }
@@ -65,8 +66,9 @@ resource "aws_iam_role" "slack_webhook" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-slack-webhook-role"
-      Environment = var.environment
+      Name               = "${var.stack_name}-slack-webhook-role"
+      Environment        = var.environment
+      "runs-on-resource" = "lambda-slack-webhook-role" # Used for resource discovery
     }
   )
 }
@@ -103,8 +105,9 @@ resource "aws_lambda_function" "slack_webhook" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-slack-webhook"
-      Environment = var.environment
+      Name               = "${var.stack_name}-slack-webhook"
+      Environment        = var.environment
+      "runs-on-resource" = "lambda-slack-webhook" # Used for resource discovery
     }
   )
 }
