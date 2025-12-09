@@ -51,8 +51,7 @@ resource "aws_cloudformation_stack" "runs_on_mock" {
   tags = merge(
     local.common_tags,
     {
-      Name               = var.stack_name
-      "runs-on-resource" = "cloudformation-mock" # Used for resource discovery
+      Name = var.stack_name
     }
   )
 }

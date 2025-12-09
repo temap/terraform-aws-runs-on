@@ -19,8 +19,7 @@ resource "aws_security_group" "runners" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-runners"
-      "runs-on-resource" = "sg-runners" # Used for resource discovery
+      Name = "${var.stack_name}-runners"
     }
   )
 

@@ -26,9 +26,8 @@ resource "aws_iam_role" "ec2_instance" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-ec2-instance-role"
-      Environment        = var.environment
-      "runs-on-resource" = "ec2-role" # Used for resource discovery
+      Name        = "${var.stack_name}-ec2-instance-role"
+      Environment = var.environment
     }
   )
 }
@@ -386,9 +385,8 @@ resource "aws_iam_instance_profile" "ec2" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-ec2-instance-profile"
-      Environment        = var.environment
-      "runs-on-resource" = "ec2-instance-profile" # Used for resource discovery
+      Name        = "${var.stack_name}-ec2-instance-profile"
+      Environment = var.environment
     }
   )
 }

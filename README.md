@@ -74,8 +74,15 @@ Cost Estimates:
 
 ## Resource Tags
 
-All resources are tagged with `runs-on-stack-name` and `runs-on-resource` for 
-discovery by the CLI and App Runner service. Do not remove these tags.
+All resources are tagged with `runs-on-stack-name` for discovery by the CLI.
+Key resources also have a `runs-on-resource` tag for identification:
+- `apprunner-service` - App Runner service
+- `config-bucket` - Configuration S3 bucket
+- `cache-bucket` - Cache S3 bucket
+- `logging-bucket` - Logging S3 bucket
+- `ec2-log-group` - EC2 instances CloudWatch log group
+
+Do not remove these tags.
 
 # Architecture
 

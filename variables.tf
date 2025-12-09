@@ -44,7 +44,7 @@ variable "tags" {
   description = "Tags to apply to all resources. Note: 'runs-on-stack-name' is added automatically for resource discovery."
   type        = map(string)
   default = {
-    ManagedBy = "opentofu"
+    ManagedBy = "opentofu/terraform"
   }
 }
 

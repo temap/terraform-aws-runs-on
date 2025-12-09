@@ -91,11 +91,8 @@ resource "aws_launch_template" "linux_default" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-linux-default"
-      LaunchType         = "linux-default"
-      NetworkType        = "public"
-      Environment        = var.environment
-      "runs-on-resource" = "launch-template-linux-default" # Used for resource discovery
+      Name        = "${var.stack_name}-linux-default"
+      Environment = var.environment
     }
   )
 }
@@ -186,11 +183,8 @@ resource "aws_launch_template" "windows_default" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-windows-default"
-      LaunchType         = "windows-default"
-      NetworkType        = "public"
-      Environment        = var.environment
-      "runs-on-resource" = "launch-template-windows-default" # Used for resource discovery
+      Name        = "${var.stack_name}-windows-default"
+      Environment = var.environment
     }
   )
 }
@@ -281,11 +275,8 @@ resource "aws_launch_template" "linux_private" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-linux-private"
-      LaunchType         = "linux-private"
-      NetworkType        = "private"
-      Environment        = var.environment
-      "runs-on-resource" = "launch-template-linux-private" # Used for resource discovery
+      Name        = "${var.stack_name}-linux-private"
+      Environment = var.environment
     }
   )
 }
@@ -376,11 +367,8 @@ resource "aws_launch_template" "windows_private" {
   tags = merge(
     local.common_tags,
     {
-      Name               = "${var.stack_name}-windows-private"
-      LaunchType         = "windows-private"
-      NetworkType        = "private"
-      Environment        = var.environment
-      "runs-on-resource" = "launch-template-windows-private" # Used for resource discovery
+      Name        = "${var.stack_name}-windows-private"
+      Environment = var.environment
     }
   )
 }
