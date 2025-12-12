@@ -71,7 +71,6 @@ The root module coordinates all submodules:
 
 ### Key Design Patterns
 
-- **CloudFormation bootstrap stack**: A minimal CF stack (`aws_cloudformation_stack.runs_on_mock`) is created for CLI compatibility - the RunsOn app calls DescribeStacks on startup
 - **Optional features**: EFS and ECR are controlled by `enable_efs` and `enable_ecr` variables with conditional resource creation
 - **Private networking**: Controlled by `private_mode` variable with values: `false`, `true`, `always`, `only`
 - **Security groups**: Can be provided externally via `security_group_ids` or created automatically

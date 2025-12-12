@@ -24,39 +24,6 @@ locals {
 }
 
 ###########################
-# CloudFormation Stack for CLI Compatibility
-# Exposes all outputs that the RunsOn CLI expects from a CloudFormation deployment
-###########################
-
-resource "aws_cloudformation_stack" "runs_on_mock" {
-  name = var.stack_name
-
-  template_body = jsonencode({
-    AWSTemplateFormatVersion = "2010-09-09"
-    Description              = "RunsOn stack deployed via Terraform/OpenTofu (minimal bootstrap)"
-
-    Resources = {
-      MockResource = {
-        Type = "AWS::CloudFormation::WaitConditionHandle"
-      }
-    }
-
-    Outputs = {
-      ManagedBy = {
-        Value = "OpenTofu"
-      }
-    }
-  })
-
-  tags = merge(
-    local.common_tags,
-    {
-      Name = var.stack_name
-    }
-  )
-}
-
-###########################
 # Wait for NAT Gateway (Private Networking Only)
 # NAT gateways can take time to become fully operational after creation.
 # This delay ensures network connectivity is ready before App Runner starts.
@@ -64,8 +31,6 @@ resource "aws_cloudformation_stack" "runs_on_mock" {
 
 resource "time_sleep" "wait_for_nat" {
   count = var.private_mode != "false" ? 1 : 0
-
-  depends_on = [aws_cloudformation_stack.runs_on_mock]
 
   create_duration = "60s"
 }
@@ -265,9 +230,8 @@ module "core" {
 
   tags = local.common_tags
 
-  # Ensure CloudFormation stack exists and NAT gateway is ready before App Runner starts
+  # Ensure NAT gateway is ready before App Runner starts
   depends_on = [
-    aws_cloudformation_stack.runs_on_mock,
     time_sleep.wait_for_nat
   ]
 }

@@ -119,14 +119,6 @@ resource "aws_iam_role_policy" "apprunner_permissions" {
           }
         }
       },
-      # cloudformation:DescribeStacks
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudformation:DescribeStacks"
-        ]
-        Resource = "arn:aws:cloudformation:${var.region}:${var.account_id}:stack/${var.stack_name}/*"
-      },
       # ec2:CreateFleet, DeleteFleets
       {
         Effect = "Allow"
