@@ -1,21 +1,11 @@
 # variables.tf
 # Root module variables for RunsOn infrastructure
+# Organized by submodule usage for clarity
 
 ###########################
-# General Configuration
+# Shared Configuration
+# Variables used across multiple modules
 ###########################
-
-variable "app_alarm_daily_minutes" {
-  description = "Daily budget in minutes for the App Runner service before triggering an alarm"
-  type        = number
-  default     = 4000
-}
-
-variable "sqs_queue_oldest_message_threshold_seconds" {
-  description = "Threshold in seconds for oldest message in SQS queues before triggering an alarm (0 to disable)"
-  type        = number
-  default     = 0
-}
 
 variable "stack_name" {
   description = "Name for the RunsOn stack (used for resource naming)"
@@ -50,6 +40,7 @@ variable "tags" {
 
 ###########################
 # GitHub Configuration
+# Used by: core module
 ###########################
 
 variable "github_organization" {
@@ -76,6 +67,7 @@ variable "license_key" {
 
 ###########################
 # Networking Configuration
+# Used by: core, compute, optional modules
 ###########################
 
 variable "vpc_id" {
@@ -126,8 +118,26 @@ variable "security_group_ids" {
   default     = []
 }
 
+variable "ssh_allowed" {
+  description = "Allow SSH access to runner instances"
+  type        = bool
+  default     = true
+}
+
+variable "ssh_cidr_range" {
+  description = "CIDR range allowed for SSH access to runner instances (only applies if ssh_allowed is true)"
+  type        = string
+  default     = "0.0.0.0/0"
+
+  validation {
+    condition     = can(cidrhost(var.ssh_cidr_range, 0))
+    error_message = "ssh_cidr_range must be a valid IPv4 CIDR block."
+  }
+}
+
 ###########################
 # Storage Configuration
+# Used by: storage module
 ###########################
 
 variable "cache_expiration_days" {
@@ -147,14 +157,9 @@ variable "force_destroy_buckets" {
   default     = false
 }
 
-variable "force_delete_ecr" {
-  description = "Allow ECR repository to be deleted even when it contains images. Set to true for testing environments."
-  type        = bool
-  default     = false
-}
-
 ###########################
 # Compute Configuration
+# Used by: compute module
 ###########################
 
 variable "log_retention_days" {
@@ -244,6 +249,7 @@ variable "runner_large_volume_throughput" {
 
 ###########################
 # App Runner Configuration
+# Used by: core module
 ###########################
 
 variable "app_image" {
@@ -294,24 +300,8 @@ variable "app_debug" {
 
 ###########################
 # Runner Configuration
+# Used by: core module
 ###########################
-
-variable "ssh_allowed" {
-  description = "Allow SSH access to runner instances"
-  type        = bool
-  default     = true
-}
-
-variable "ssh_cidr_range" {
-  description = "CIDR range allowed for SSH access to runner instances (only applies if ssh_allowed is true)"
-  type        = string
-  default     = "0.0.0.0/0"
-
-  validation {
-    condition     = can(cidrhost(var.ssh_cidr_range, 0))
-    error_message = "ssh_cidr_range must be a valid IPv4 CIDR block."
-  }
-}
 
 variable "ec2_queue_size" {
   description = "Maximum number of EC2 instances in queue"
@@ -366,6 +356,7 @@ variable "runner_custom_tags" {
 
 ###########################
 # Operational Configuration
+# Used by: core module
 ###########################
 
 variable "enable_cost_reports" {
@@ -388,7 +379,31 @@ variable "spot_circuit_breaker" {
 }
 
 ###########################
+# Monitoring & Alarms
+# Used by: core module
+###########################
+
+variable "app_alarm_daily_minutes" {
+  description = "Daily budget in minutes for the App Runner service before triggering an alarm"
+  type        = number
+  default     = 4000
+}
+
+variable "sqs_queue_oldest_message_threshold_seconds" {
+  description = "Threshold in seconds for oldest message in SQS queues before triggering an alarm (0 to disable)"
+  type        = number
+  default     = 0
+}
+
+variable "enable_dashboard" {
+  description = "Create a CloudWatch dashboard for monitoring RunsOn operations (number of jobs processed, rate limit status, last error messages, etc.)"
+  type        = bool
+  default     = true
+}
+
+###########################
 # Integration Configuration
+# Used by: core module
 ###########################
 
 variable "integration_step_security_api_key" {
@@ -424,6 +439,7 @@ variable "logger_level" {
 
 ###########################
 # Alert Configuration
+# Used by: core module
 ###########################
 
 variable "email" {
@@ -446,6 +462,7 @@ variable "alert_slack_webhook_url" {
 
 ###########################
 # Optional Features
+# Used by: optional module
 ###########################
 
 variable "enable_efs" {
@@ -466,8 +483,8 @@ variable "prevent_destroy_optional_resources" {
   default     = true
 }
 
-variable "enable_dashboard" {
-  description = "Create a CloudWatch dashboard for monitoring RunsOn operations (number of jobs processed, rate limit status, last error messages, etc.)"
+variable "force_delete_ecr" {
+  description = "Allow ECR repository to be deleted even when it contains images. Set to true for testing environments."
   type        = bool
-  default     = true
+  default     = false
 }
