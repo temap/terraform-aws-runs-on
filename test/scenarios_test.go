@@ -113,8 +113,8 @@ func TestScenarioBasic(t *testing.T) {
 		launchTemplateID := terraform.Output(t, moduleOptions, "launch_template_linux_default_id")
 		require.NotEmpty(t, launchTemplateID, "Launch template ID should not be empty")
 
-		// Launch shared instance for all functional tests
-		instanceID := LaunchTestInstance(t, launchTemplateID, publicSubnets[0])
+		// Launch shared instance for all functional tests (public subnet, needs public IP for SSM)
+		instanceID := LaunchTestInstance(t, launchTemplateID, publicSubnets[0], true)
 		defer TerminateTestInstance(t, instanceID)
 
 		// Wait for instance to be SSM-ready
@@ -156,7 +156,7 @@ func TestScenarioBasic(t *testing.T) {
 		}
 
 		testWorkflow := GetOptionalEnv("RUNS_ON_TEST_WORKFLOW", "runs-on-test-runner.yml")
-		testID := fmt.Sprintf("%d", time.Now().UnixNano())
+		testID := GetTestID()
 		startTime := time.Now()
 
 		// Wait for App Runner health
@@ -305,8 +305,8 @@ func TestScenarioFullFeatured(t *testing.T) {
 		launchTemplateID := terraform.Output(t, moduleOptions, "launch_template_linux_private_id")
 		require.NotEmpty(t, launchTemplateID, "Private launch template ID should not be empty")
 
-		// Launch instance in PRIVATE subnet
-		instanceID := LaunchTestInstancePrivate(t, launchTemplateID, privateSubnets[0])
+		// Launch instance in PRIVATE subnet (no public IP, uses NAT for SSM)
+		instanceID := LaunchTestInstance(t, launchTemplateID, privateSubnets[0], false)
 		defer TerminateTestInstance(t, instanceID)
 
 		// Wait for instance to be SSM-ready (requires NAT gateway)

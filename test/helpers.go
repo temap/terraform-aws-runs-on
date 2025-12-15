@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -26,7 +25,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// GetTestID generates a unique test ID for resource naming
+// GetTestID generates a unique test ID for resource naming (Unix timestamp in seconds)
 func GetTestID() string {
 	return fmt.Sprintf("%d", time.Now().Unix())
 }
@@ -350,8 +349,9 @@ func GetLatestAmazonLinux2023AMI(t *testing.T) string {
 
 // LaunchTestInstance launches an EC2 instance from a launch template for functional testing.
 // launchTemplateID should be in format "lt-xxx:version" or just "lt-xxx".
+// Set publicIP to true for public subnets (SSM access via internet) or false for private subnets (SSM via NAT).
 // Returns the instance ID.
-func LaunchTestInstance(t *testing.T, launchTemplateID, subnetID string) string {
+func LaunchTestInstance(t *testing.T, launchTemplateID, subnetID string, publicIP bool) string {
 	ctx := context.Background()
 	cfg := MustGetAWSConfig(ctx)
 	client := ec2.NewFromConfig(cfg)
@@ -367,8 +367,17 @@ func LaunchTestInstance(t *testing.T, launchTemplateID, subnetID string) string 
 	// Get the latest Amazon Linux 2023 AMI since the launch template may not have one
 	amiID := GetLatestAmazonLinux2023AMI(t)
 
-	t.Logf("Launching test instance from template %s (version %s) in subnet %s with AMI %s",
-		templateID, version, subnetID, amiID)
+	instanceType := "public"
+	if !publicIP {
+		instanceType = "private"
+	}
+	t.Logf("Launching %s test instance from template %s (version %s) in subnet %s with AMI %s",
+		instanceType, templateID, version, subnetID, amiID)
+
+	instanceName := "terratest-functional-test"
+	if !publicIP {
+		instanceName = "terratest-functional-test-private"
+	}
 
 	input := &ec2.RunInstancesInput{
 		LaunchTemplate: &ec2types.LaunchTemplateSpecification{
@@ -383,7 +392,7 @@ func LaunchTestInstance(t *testing.T, launchTemplateID, subnetID string) string 
 			{
 				DeviceIndex:              aws.Int32(0),
 				SubnetId:                 aws.String(subnetID),
-				AssociatePublicIpAddress: aws.Bool(true), // Need public IP for SSM access in public subnet
+				AssociatePublicIpAddress: aws.Bool(publicIP),
 				DeleteOnTermination:      aws.Bool(true),
 			},
 		},
@@ -391,7 +400,7 @@ func LaunchTestInstance(t *testing.T, launchTemplateID, subnetID string) string 
 			{
 				ResourceType: ec2types.ResourceTypeInstance,
 				Tags: []ec2types.Tag{
-					{Key: aws.String("Name"), Value: aws.String("terratest-functional-test")},
+					{Key: aws.String("Name"), Value: aws.String(instanceName)},
 					{Key: aws.String("TestFramework"), Value: aws.String("terratest")},
 					{Key: aws.String("AutoCleanup"), Value: aws.String("true")},
 				},
@@ -400,11 +409,11 @@ func LaunchTestInstance(t *testing.T, launchTemplateID, subnetID string) string 
 	}
 
 	result, err := client.RunInstances(ctx, input)
-	require.NoError(t, err, "Failed to launch test instance")
+	require.NoError(t, err, "Failed to launch %s test instance", instanceType)
 	require.Len(t, result.Instances, 1, "Expected exactly one instance to be launched")
 
 	instanceID := *result.Instances[0].InstanceId
-	t.Logf("Launched test instance: %s", instanceID)
+	t.Logf("Launched %s test instance: %s", instanceType, instanceID)
 	return instanceID
 }
 
@@ -760,144 +769,6 @@ func WaitForWorkflowCompletion(t *testing.T, repo string, runID int64, timeout t
 	return ""
 }
 
-// TriggerWorkflowDispatch triggers a workflow_dispatch event for a workflow in a repository.
-// Uses GITHUB_TOKEN environment variable for authentication.
-// Returns an error if the trigger fails.
-func TriggerWorkflowDispatch(t *testing.T, repo, workflowFile, testID string) error {
-	client, err := getGitHubClient()
-	if err != nil {
-		return err
-	}
-
-	owner, repoName, err := parseRepo(repo)
-	if err != nil {
-		return err
-	}
-
-	t.Logf("Triggering workflow %s in %s with test_id=%s", workflowFile, repo, testID)
-
-	ctx := context.Background()
-	_, err = client.Actions.CreateWorkflowDispatchEventByFileName(
-		ctx, owner, repoName, workflowFile,
-		github.CreateWorkflowDispatchEventRequest{
-			Ref: "main",
-			Inputs: map[string]interface{}{
-				"test_id": testID,
-			},
-		})
-	if err != nil {
-		return fmt.Errorf("failed to trigger workflow dispatch: %w", err)
-	}
-
-	t.Logf("Successfully triggered workflow %s", workflowFile)
-	return nil
-}
-
-// WaitForTriggeredWorkflow polls for a workflow run that was triggered with the given test_id.
-// It looks for runs that started after the function was called and contain the test_id in their inputs.
-// Returns the run ID when found, or an error if timeout is reached.
-func WaitForTriggeredWorkflow(t *testing.T, repo, workflowFile, testID string, timeout time.Duration) (int64, error) {
-	client, err := getGitHubClient()
-	if err != nil {
-		return 0, err
-	}
-
-	owner, repoName, err := parseRepo(repo)
-	if err != nil {
-		return 0, err
-	}
-
-	ctx := context.Background()
-	startTime := time.Now()
-	deadline := startTime.Add(timeout)
-	pollInterval := 10 * time.Second
-
-	t.Logf("Waiting for workflow run with test_id=%s (timeout: %v)", testID, timeout)
-
-	for time.Now().Before(deadline) {
-		// Check for abort signal
-		abortFile := "/tmp/runson-test-abort"
-		if _, err := os.Stat(abortFile); err == nil {
-			os.Remove(abortFile)
-			return 0, fmt.Errorf("test aborted by user (detected %s)", abortFile)
-		}
-
-		runs, _, err := client.Actions.ListWorkflowRunsByFileName(
-			ctx, owner, repoName, workflowFile,
-			&github.ListWorkflowRunsOptions{
-				Event: "workflow_dispatch",
-				ListOptions: github.ListOptions{
-					PerPage: 10,
-				},
-			})
-		if err != nil {
-			t.Logf("Error listing workflow runs: %v", err)
-			time.Sleep(pollInterval)
-			continue
-		}
-
-		for _, run := range runs.WorkflowRuns {
-			// Only check runs that started after we triggered
-			if run.CreatedAt != nil && run.CreatedAt.Time.Before(startTime.Add(-1*time.Minute)) {
-				continue
-			}
-
-			runID := run.GetID()
-			if checkRunForTestID(t, client, owner, repoName, runID, testID) {
-				t.Logf("Found workflow run %d matching test_id=%s", runID, testID)
-				return runID, nil
-			}
-		}
-
-		t.Logf("Workflow run with test_id=%s not found yet, waiting %v...", testID, pollInterval)
-		time.Sleep(pollInterval)
-	}
-
-	return 0, fmt.Errorf("timeout waiting for workflow run with test_id=%s", testID)
-}
-
-// checkRunForTestID checks if a workflow run contains our test_id in its logs.
-func checkRunForTestID(t *testing.T, client *github.Client, owner, repo string, runID int64, testID string) bool {
-	ctx := context.Background()
-
-	jobs, _, err := client.Actions.ListWorkflowJobs(ctx, owner, repo, runID, &github.ListWorkflowJobsOptions{
-		Filter: "all",
-	})
-	if err != nil {
-		t.Logf("Error listing jobs for run %d: %v", runID, err)
-		return false
-	}
-
-	httpClient := &http.Client{Timeout: 30 * time.Second}
-	for _, job := range jobs.Jobs {
-		logsURL, _, err := client.Actions.GetWorkflowJobLogs(ctx, owner, repo, job.GetID(), 4)
-		if err != nil {
-			continue
-		}
-
-		if logsURL == nil {
-			continue
-		}
-
-		resp, err := httpClient.Get(logsURL.String())
-		if err != nil {
-			continue
-		}
-
-		body, err := io.ReadAll(io.LimitReader(resp.Body, 1*1024*1024)) // 1MB limit
-		resp.Body.Close()
-		if err != nil {
-			continue
-		}
-
-		if strings.Contains(string(body), testID) {
-			return true
-		}
-	}
-
-	return false
-}
-
 // =============================================================================
 // OBSERVER MODE HELPERS
 // =============================================================================
@@ -1032,54 +903,6 @@ func MonitorWorkflowJobStates(t *testing.T, repo string, runID int64, queuedTime
 	}
 
 	return fmt.Errorf("jobs stuck in 'queued' state for %v - likely no runner available (is the RunsOn app registered?)", queuedTimeout)
-}
-
-// isRunsOnJob checks if a workflow job was picked up by a RunsOn runner.
-func isRunsOnJob(job *github.WorkflowJob) bool {
-	// Check runner name
-	if job.RunnerName != nil && strings.Contains(*job.RunnerName, "runs-on") {
-		return true
-	}
-	// Check labels
-	for _, label := range job.Labels {
-		if strings.HasPrefix(label, "runs-on=") {
-			return true
-		}
-	}
-	return false
-}
-
-// WatchAndWaitForWorkflow is the main entry point for observer mode integration tests.
-// It watches for a workflow run, monitors job states for early detection of issues,
-// then waits for workflow completion.
-//
-// Returns the workflow conclusion ("success", "failure", etc.) or error.
-func WatchAndWaitForWorkflow(t *testing.T, repo, workflowFile, stackName string, startTime time.Time, watchTimeout, completionTimeout, queuedTimeout time.Duration) (string, error) {
-	// Step 1: Watch for workflow run to appear
-	t.Log("Step 1: Watching for workflow run...")
-	runID, err := WatchForWorkflowRun(t, repo, workflowFile, stackName, startTime, watchTimeout)
-	if err != nil {
-		return "", fmt.Errorf("failed to find workflow run: %w", err)
-	}
-	t.Logf("Found workflow run %d", runID)
-
-	// Step 2: Monitor job states for early detection of stuck jobs
-	t.Log("Step 2: Monitoring job states for runner pickup...")
-	err = MonitorWorkflowJobStates(t, repo, runID, queuedTimeout)
-	if err != nil {
-		return "", fmt.Errorf("job monitoring failed: %w", err)
-	}
-	t.Log("Runner has picked up the job!")
-
-	// Step 3: Wait for workflow completion
-	t.Log("Step 3: Waiting for workflow completion...")
-	conclusion := WaitForWorkflowCompletion(t, repo, runID, completionTimeout)
-	if conclusion == "" {
-		return "", fmt.Errorf("workflow did not complete within %v", completionTimeout)
-	}
-
-	t.Logf("Workflow completed with conclusion: %s", conclusion)
-	return conclusion, nil
 }
 
 // =============================================================================
@@ -1340,69 +1163,6 @@ DOCKERFILE
 	`, strings.Split(ecrURL, "/")[1], testTag, region)
 	_, _, _ = RunSSMCommand(t, instanceID, []string{cleanupCmd})
 	t.Logf("✓ ECR cache test cleanup completed")
-}
-
-// =============================================================================
-// PRIVATE SUBNET INSTANCE LAUNCHER
-// =============================================================================
-
-// LaunchTestInstancePrivate launches an EC2 instance in a private subnet (no public IP).
-// Use this for testing private networking scenarios where NAT gateway provides outbound access.
-func LaunchTestInstancePrivate(t *testing.T, launchTemplateID, subnetID string) string {
-	ctx := context.Background()
-	cfg := MustGetAWSConfig(ctx)
-	client := ec2.NewFromConfig(cfg)
-
-	// Parse launch template ID and version
-	parts := strings.Split(launchTemplateID, ":")
-	templateID := parts[0]
-	version := "$Latest"
-	if len(parts) > 1 {
-		version = parts[1]
-	}
-
-	// Get the latest Amazon Linux 2023 AMI since the launch template may not have one
-	amiID := GetLatestAmazonLinux2023AMI(t)
-
-	t.Logf("Launching private test instance from template %s (version %s) in subnet %s with AMI %s",
-		templateID, version, subnetID, amiID)
-
-	input := &ec2.RunInstancesInput{
-		LaunchTemplate: &ec2types.LaunchTemplateSpecification{
-			LaunchTemplateId: aws.String(templateID),
-			Version:          aws.String(version),
-		},
-		ImageId:  aws.String(amiID),
-		MinCount: aws.Int32(1),
-		MaxCount: aws.Int32(1),
-		// Use NetworkInterfaces with NO public IP for private subnet
-		NetworkInterfaces: []ec2types.InstanceNetworkInterfaceSpecification{
-			{
-				DeviceIndex:              aws.Int32(0),
-				SubnetId:                 aws.String(subnetID),
-				AssociatePublicIpAddress: aws.Bool(false), // No public IP for private subnet
-				DeleteOnTermination:      aws.Bool(true),
-			},
-		},
-		TagSpecifications: []ec2types.TagSpecification{
-			{
-				ResourceType: ec2types.ResourceTypeInstance,
-				Tags: []ec2types.Tag{
-					{Key: aws.String("Name"), Value: aws.String("terratest-functional-test-private")},
-					{Key: aws.String("TestFramework"), Value: aws.String("terratest")},
-					{Key: aws.String("AutoCleanup"), Value: aws.String("true")},
-				},
-			},
-		},
-	}
-
-	result, err := client.RunInstances(ctx, input)
-	require.NoError(t, err, "Failed to launch private test instance")
-	require.Len(t, result.Instances, 1, "Expected exactly one instance to be launched")
-
-	instanceID := *result.Instances[0].InstanceId
-	t.Logf("Launched private test instance: %s", instanceID)
-	return instanceID
 }
 
 // =============================================================================
