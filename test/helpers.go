@@ -57,6 +57,10 @@ type ScenarioConfig struct {
 	EnableECR  bool
 	EnableNAT  bool
 	AWSRegion  string
+
+	// App version overrides (optional - empty means use module defaults)
+	AppImage string
+	AppTag   string
 }
 
 // DefaultScenarioConfig returns config with sensible test defaults
@@ -65,7 +69,9 @@ func DefaultScenarioConfig() ScenarioConfig {
 		TestID:     GetTestID(),
 		GithubOrg:  getGithubOrg(),
 		LicenseKey: GetOptionalEnv("RUNS_ON_LICENSE_KEY", "test-license"),
-		AWSRegion:  "us-east-1",
+		AWSRegion:  GetOptionalEnv("AWS_REGION", "us-east-1"),
+		AppImage:   os.Getenv("RUNS_ON_APP_IMAGE"),
+		AppTag:     os.Getenv("RUNS_ON_APP_TAG"),
 	}
 }
 
@@ -118,6 +124,14 @@ func (c ScenarioConfig) ToModuleVars(vpcID string, publicSubnets, privateSubnets
 		"force_destroy_buckets":              true,  // Enable force destroy for S3 test cleanup
 		"force_delete_ecr":                   true,  // Enable force delete for ECR test cleanup
 		"prevent_destroy_optional_resources": false, // Disable prevent_destroy for test cleanup
+	}
+
+	// App version overrides (only set if provided via env vars)
+	if c.AppImage != "" {
+		vars["app_image"] = c.AppImage
+	}
+	if c.AppTag != "" {
+		vars["app_tag"] = c.AppTag
 	}
 
 	if len(privateSubnets) > 0 && c.EnableNAT {

@@ -155,7 +155,11 @@ func TestScenarioBasic(t *testing.T) {
 			t.Skip("RUNS_ON_TEST_REPO or GITHUB_REPOSITORY not set")
 		}
 
-		testWorkflow := GetOptionalEnv("RUNS_ON_TEST_WORKFLOW", "runs-on-test-runner.yml")
+		testWorkflow := os.Getenv("RUNS_ON_TEST_WORKFLOW")
+		if testWorkflow == "" {
+			t.Skip("RUNS_ON_TEST_WORKFLOW not set")
+		}
+
 		testID := GetTestID()
 		startTime := time.Now()
 
@@ -203,6 +207,8 @@ func TestScenarioBasic(t *testing.T) {
 // TestScenarioFullFeatured tests full-featured scenario with all options
 // NOTE: Most expensive test - requires NAT + EFS + ECR
 func TestScenarioFullFeatured(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("Skipping expensive full-featured test (requires NAT + EFS + ECR)")
 	}
@@ -250,7 +256,13 @@ func TestScenarioFullFeatured(t *testing.T) {
 
 	// ===== OUTPUT VALIDATIONS =====
 	t.Run("Outputs", func(t *testing.T) {
+		assert.NotEmpty(t, stackName, "Stack name should not be empty")
 		assert.NotEmpty(t, appRunnerURL, "App Runner URL should not be empty")
+		assert.Contains(t, appRunnerURL, "awsapprunner.com", "Should be a valid App Runner URL")
+		assert.NotEmpty(t, configBucket, "Config bucket should not be empty")
+		assert.NotEmpty(t, cacheBucket, "Cache bucket should not be empty")
+		assert.NotEmpty(t, loggingBucket, "Logging bucket should not be empty")
+		assert.NotEmpty(t, ec2RoleName, "EC2 role name should not be empty")
 		assert.NotEmpty(t, efsFileSystemID, "EFS ID should not be empty")
 		assert.NotEmpty(t, ecrURL, "ECR URL should not be empty")
 	})
@@ -337,6 +349,74 @@ func TestScenarioFullFeatured(t *testing.T) {
 			// Validates ECR authentication, push, and pull
 			ValidateECRPushPullFromEC2(t, instanceID, ecrURL)
 		})
+
+		t.Run("CloudWatchLogging", func(t *testing.T) {
+			ValidateEC2CloudWatchLogs(t, instanceID, logGroupName)
+		})
+	})
+
+	// ===== INTEGRATION TESTS =====
+	// Manual trigger mode: User triggers workflow with test_id provided by the test.
+	// Test watches for that specific run using the test_id for correlation.
+	// Skips automatically if required env vars not set.
+	t.Run("Integration/JobExecution", func(t *testing.T) {
+		// Requires GITHUB_TOKEN for GitHub API calls
+		if os.Getenv("GITHUB_TOKEN") == "" {
+			t.Skip("GITHUB_TOKEN not set")
+		}
+
+		// Get test repo - prefer RUNS_ON_TEST_REPO, fallback to GITHUB_REPOSITORY
+		// Skips automatically if neither is set (implicit opt-in)
+		testRepo := os.Getenv("RUNS_ON_TEST_REPO")
+		if testRepo == "" {
+			testRepo = os.Getenv("GITHUB_REPOSITORY")
+		}
+		if testRepo == "" {
+			t.Skip("RUNS_ON_TEST_REPO or GITHUB_REPOSITORY not set")
+		}
+
+		testWorkflow := os.Getenv("RUNS_ON_TEST_WORKFLOW")
+		if testWorkflow == "" {
+			t.Skip("RUNS_ON_TEST_WORKFLOW not set")
+		}
+
+		testID := GetTestID()
+		startTime := time.Now()
+
+		// Wait for App Runner health
+		ValidateAppRunnerHealth(t, appRunnerURL, 20)
+
+		// Display instructions
+		t.Log("=======================================================")
+		t.Log("INTEGRATION TEST - OBSERVER MODE")
+		t.Log("=======================================================")
+		t.Logf("App Runner URL: https://%s", appRunnerURL)
+		t.Logf("Test Repo: %s", testRepo)
+		t.Logf("Workflow: %s", testWorkflow)
+		t.Log("")
+		t.Log("Steps:")
+		t.Log("  1. Register RunsOn app at the URL above")
+		t.Log("  2. Trigger a workflow_dispatch run for the workflow above")
+		t.Log("  3. Test will detect the run and monitor to completion")
+		t.Log("")
+		t.Logf("To abort: touch /tmp/runson-%s-abort", testID)
+		t.Log("=======================================================")
+
+		// Watch for workflow run (user triggers it manually)
+		runID, err := WatchForWorkflowRun(t, testRepo, testWorkflow, testID, startTime, 15*time.Minute)
+		require.NoError(t, err, "Workflow run not found")
+
+		// Monitor job states for early stuck-queue detection
+		err = MonitorWorkflowJobStates(t, testRepo, runID, 3*time.Minute)
+		require.NoError(t, err, "Job stuck in queue - is the RunsOn app registered?")
+
+		// Wait for completion
+		conclusion := WaitForWorkflowCompletion(t, testRepo, runID, 10*time.Minute)
+		assert.Equal(t, "success", conclusion, "Workflow should succeed")
+
+		// Validate runner was launched
+		launched := ValidateRunnerLaunched(t, stackName, startTime)
+		assert.True(t, launched, "Runner instance should have been launched")
 	})
 
 	fmt.Printf("\n✅ Full-featured deployment successful!\n")
