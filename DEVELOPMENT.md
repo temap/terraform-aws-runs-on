@@ -33,7 +33,7 @@ make docs        # Regenerate module READMEs
 
 ## Testing
 
-Tests use [Terratest](https://terratest.gruntwork.io/) and deploy real AWS infrastructure.
+Tests use [Terratest](https://terratest.gruntwork.io/) and deploy real AWS infrastructure. See [test/README.md](test/README.md) for detailed documentation.
 
 ### Environment Variables
 
@@ -43,8 +43,8 @@ Tests use [Terratest](https://terratest.gruntwork.io/) and deploy real AWS infra
 | `AWS_SECRET_ACCESS_KEY` | Yes | AWS credentials |
 | `RUNS_ON_LICENSE_KEY` | Yes | RunsOn license key |
 | `AWS_REGION` | No | Defaults to `us-east-1` |
-| `GITHUB_ORG` | No | GitHub org for tests |
 | `RUNS_ON_TEST_REPO` | No | For integration tests (`owner/repo` format) |
+| `RUNS_ON_TEST_WORKFLOW` | No | For integration tests (workflow file name) |
 | `GITHUB_TOKEN` | No | For integration tests |
 
 ### Running Tests
@@ -54,11 +54,8 @@ Tests use [Terratest](https://terratest.gruntwork.io/) and deploy real AWS infra
 make test
 
 # Run specific scenarios
-make test-basic    # Standard deployment
-make test-efs      # With EFS shared storage
-make test-ecr      # With ECR registry
-make test-private  # With NAT gateway (expensive)
-make test-full     # All features (expensive)
+make test-basic    # Standard deployment (~$1-2, 30-45 min)
+make test-full     # All features: NAT + EFS + ECR (~$3-5, 45-60 min)
 
 # Run all scenarios
 make test-all
@@ -72,9 +69,6 @@ make test-short
 | Command | Test | Cost |
 |---------|------|------|
 | `make test-basic` | `TestScenarioBasic` | Low |
-| `make test-efs` | `TestScenarioEFSEnabled` | Low |
-| `make test-ecr` | `TestScenarioECREnabled` | Low |
-| `make test-private` | `TestScenarioPrivateNetworking` | High (NAT) |
 | `make test-full` | `TestScenarioFullFeatured` | High (NAT + EFS + ECR) |
 
 ### Test Structure

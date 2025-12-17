@@ -102,6 +102,23 @@ To abort the observer mode gracefully, create the abort file shown in the test o
 touch /tmp/runson-<test-id>-abort
 ```
 
+### Testing a Different App Version
+
+To test a specific RunsOn app version, override the App Runner image and tag:
+
+```bash
+export RUNS_ON_LICENSE_KEY="your-license-key"
+export RUNS_ON_APP_IMAGE="public.ecr.aws/c5h5o9k1/runs-on/runs-on:v2.10.0"
+export RUNS_ON_APP_TAG="v2.10.0"
+
+go test -v -timeout 45m -run "TestScenarioBasic" ./...
+```
+
+This is useful for:
+- Testing pre-release versions before upgrading
+- Validating custom builds or forks
+- Regression testing against older versions
+
 ### Full-Featured Scenario
 
 Test all optional features (NAT gateway, EFS, ECR):

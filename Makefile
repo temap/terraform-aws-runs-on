@@ -1,4 +1,4 @@
-.PHONY: help init validate fmt fmt-check lint security quick pre-commit docs clean install-tools test test-short test-all test-basic test-efs test-ecr test-private test-full
+.PHONY: help init validate fmt fmt-check lint security quick pre-commit docs clean install-tools test test-short test-all test-basic test-full
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -70,18 +70,6 @@ test-all: ## Run all test scenarios (expensive)
 test-basic: ## Run basic test scenario
 	@echo "Running TestScenarioBasic..."
 	cd test && mise exec -- go test -v -timeout 45m -run "TestScenarioBasic" ./...
-
-test-efs: ## Run EFS-enabled test scenario
-	@echo "Running TestScenarioEFSEnabled..."
-	cd test && mise exec -- go test -v -timeout 60m -run "TestScenarioEFSEnabled" ./...
-
-test-ecr: ## Run ECR-enabled test scenario
-	@echo "Running TestScenarioECREnabled..."
-	cd test && mise exec -- go test -v -timeout 60m -run "TestScenarioECREnabled" ./...
-
-test-private: ## Run private networking test scenario (expensive)
-	@echo "Running TestScenarioPrivateNetworking..."
-	cd test && mise exec -- go test -v -timeout 60m -run "TestScenarioPrivateNetworking" ./...
 
 test-full: ## Run full-featured test scenario (expensive)
 	@echo "Running TestScenarioFullFeatured..."
