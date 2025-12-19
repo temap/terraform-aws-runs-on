@@ -48,7 +48,7 @@ module "vpc" {
 # RunsOn Module - Deploys RunsOn infrastructure with smart defaults
 module "runs-on" {
   source  = "runs-on/runs-on/aws"
-  version = "v2.10.0-r1"
+  version = "v2.11.0"
 
   # Required: GitHub and License
   github_organization = "my-org"
@@ -68,16 +68,14 @@ The module assumes you have your own VPC already configured.
 This module follows a versioning scheme that maps to the main RunsOn application version:
 
 ```
-v{MAJOR}.{MINOR}.{PATCH}-r{RELEASE}
+v{MAJOR}.{MINOR}.{PATCH}
 ```
 
 - **`v{MAJOR}.{MINOR}.{PATCH}`** - Matches the RunsOn application version (e.g., `v2.11.0`)
-- **`-r{RELEASE}`** - Incremental release number for Terraform module changes (e.g., `-r1`, `-r2`)
 
 **Examples:**
-- `v2.10.0-r1` - First Terraform release for RunsOn v2.10.0
-- `v2.10.0-r2` - Second Terraform release (module fixes/improvements, same RunsOn version)
-- `v2.11.0-r1` - First Terraform release for RunsOn v2.11.0
+- `v2.10.0` - Terraform release for RunsOn v2.10.0
+- `v2.11.0` - Terraform release for RunsOn v2.11.0
 
 When upgrading, check:
 1. The RunsOn version changelog at [runs-on.com/changelog](https://runs-on.com/changelog)
@@ -172,7 +170,7 @@ Standard deployment with smart defaults:
 ```hcl
 module "runs-on" {
   source  = "runs-on/runs-on/aws"
-  version = "v2.10.0-r1"
+  version = "v2.11.0"
 
   github_organization = "my-org"
   license_key         = "your-license-key"
@@ -190,7 +188,7 @@ Enable private networking for static egress IPs (requires NAT Gateway):
 ```hcl
 module "runs-on" {
   source  = "runs-on/runs-on/aws"
-  version = "v2.10.0-r1"
+  version = "v2.11.0"
 
   github_organization = "my-org"
   license_key         = "your-license-key"
@@ -216,7 +214,7 @@ Enable shared persistent storage across all runners for storing and sharing larg
 ```hcl
 module "runs-on" {
   source  = "runs-on/runs-on/aws"
-  version = "v2.10.0-r1"
+  version = "v2.11.0"
 
   github_organization = "my-org"
   license_key         = "your-license-key"
@@ -237,7 +235,7 @@ Enable image cache across workflow jobs, including Docker build cache:
 ```hcl
 module "runs-on" {
   source  = "runs-on/runs-on/aws"
-  version = "v2.10.0-r1"
+  version = "v2.11.0"
 
   github_organization = "my-org"
   license_key         = "your-license-key"
@@ -293,7 +291,7 @@ module "vpc" {
 
 module "runs-on" {
   source  = "runs-on/runs-on/aws"
-  version = "v2.10.0-r1"
+  version = "v2.11.0"
 
   github_organization = "my-org"
   license_key         = "your-license-key"
