@@ -76,6 +76,42 @@ resource "aws_iam_role_policy_attachment" "apprunner_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
 
+###########################
+# App Runner ECR Access Role (for private ECR)
+###########################
+
+resource "aws_iam_role" "apprunner_ecr_access" {
+  count = var.app_ecr_repository_url != "" ? 1 : 0
+  name  = "${var.stack_name}-apprunner-ecr-access"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "build.apprunner.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name        = "${var.stack_name}-apprunner-ecr-access"
+      Environment = var.environment
+    }
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "apprunner_ecr_access" {
+  count      = var.app_ecr_repository_url != "" ? 1 : 0
+  role       = aws_iam_role.apprunner_ecr_access[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
+}
+
 # App Runner service policy
 resource "aws_iam_role_policy" "apprunner_permissions" {
   name = "AppRunnerEC2Permissions"
@@ -328,6 +364,14 @@ resource "aws_apprunner_service" "this" {
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.this.arn
 
   source_configuration {
+    # Authentication configuration for private ECR
+    dynamic "authentication_configuration" {
+      for_each = var.app_ecr_repository_url != "" ? [1] : []
+      content {
+        access_role_arn = aws_iam_role.apprunner_ecr_access[0].arn
+      }
+    }
+
     image_repository {
       image_configuration {
         port = "8080"
@@ -339,8 +383,9 @@ resource "aws_apprunner_service" "this" {
         runtime_environment_secrets = local.sensitive_env_secrets
       }
 
-      image_identifier      = var.app_image
-      image_repository_type = "ECR_PUBLIC"
+      # Use private ECR URL if provided, otherwise default public image
+      image_identifier      = var.app_ecr_repository_url != "" ? var.app_ecr_repository_url : var.app_image
+      image_repository_type = var.app_ecr_repository_url != "" ? "ECR" : "ECR_PUBLIC"
     }
 
     auto_deployments_enabled = false

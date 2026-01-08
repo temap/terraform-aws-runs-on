@@ -298,6 +298,12 @@ variable "app_debug" {
   default     = false
 }
 
+variable "app_ecr_repository_url" {
+  description = "Private ECR repository URL for RunsOn image (e.g., 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-repo:tag). When specified, App Runner will pull from this private ECR instead of public ECR."
+  type        = string
+  default     = ""
+}
+
 ###########################
 # Runner Configuration
 # Used by: core module
