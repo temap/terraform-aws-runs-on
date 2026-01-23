@@ -54,8 +54,7 @@ resource "aws_wafv2_ip_set" "allowed_ips_ipv4" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-allowed-ips-ipv4"
-      Environment = var.environment
+      Name = "${var.stack_name}-allowed-ips-ipv4"
     }
   )
 }
@@ -70,8 +69,7 @@ resource "aws_wafv2_ip_set" "allowed_ips_ipv6" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-allowed-ips-ipv6"
-      Environment = var.environment
+      Name = "${var.stack_name}-allowed-ips-ipv6"
     }
   )
 }
@@ -149,8 +147,7 @@ resource "aws_wafv2_web_acl" "this" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-waf"
-      Environment = var.environment
+      Name = "${var.stack_name}-waf"
     }
   )
 }

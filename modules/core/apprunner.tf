@@ -97,8 +97,7 @@ resource "aws_iam_role" "apprunner_ecr_access" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-apprunner-ecr-access"
-      Environment = var.environment
+      Name = "${var.stack_name}-apprunner-ecr-access"
     }
   )
 }
