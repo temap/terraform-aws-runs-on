@@ -40,12 +40,6 @@ module "vpc" {
   # Internet connectivity
   enable_dns_hostnames = true
   enable_dns_support   = true
-
-  tags = {
-    Environment = "production"
-    ManagedBy   = "OpenTofu"
-    Project     = "RunsOn"
-  }
 }
 
 # RunsOn Module - Deploys RunsOn infrastructure with smart defaults

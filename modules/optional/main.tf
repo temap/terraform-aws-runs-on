@@ -14,10 +14,5 @@ terraform {
 
 # Local variables
 locals {
-  common_tags = merge(
-    var.tags,
-    {
-      Module = "runs-on-optional"
-    }
-  )
+  common_tags = var.tags
 }
