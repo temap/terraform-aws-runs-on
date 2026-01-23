@@ -21,11 +21,6 @@ variable "cost_allocation_tag" {
   type        = string
 }
 
-variable "environment" {
-  description = "Environment name (e.g., prod, dev, staging)"
-  type        = string
-}
-
 variable "config_bucket_name" {
   description = "S3 bucket name for configuration storage"
   type        = string

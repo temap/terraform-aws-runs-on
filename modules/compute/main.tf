@@ -16,10 +16,5 @@ terraform {
 locals {
   log_group_name = "${var.stack_name}/ec2/instances"
 
-  common_tags = merge(
-    var.tags,
-    {
-      Module = "runs-on-compute"
-    }
-  )
+  common_tags = var.tags
 }
