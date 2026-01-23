@@ -176,11 +176,12 @@ module "core" {
   launch_template_windows_private_id = module.compute.launch_template_windows_private_id
 
   # App Runner configuration
-  app_image     = var.app_image
-  app_tag       = var.app_tag
-  app_cpu       = var.app_cpu
-  app_memory    = var.app_memory
-  bootstrap_tag = var.bootstrap_tag
+  app_image              = var.app_image
+  app_tag                = var.app_tag
+  app_cpu                = var.app_cpu
+  app_memory             = var.app_memory
+  bootstrap_tag          = var.bootstrap_tag
+  app_ecr_repository_url = var.app_ecr_repository_url
 
   # Networking
   private_mode = var.private_mode

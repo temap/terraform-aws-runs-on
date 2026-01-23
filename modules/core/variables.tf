@@ -162,6 +162,12 @@ variable "app_debug" {
   type        = bool
 }
 
+variable "app_ecr_repository_url" {
+  description = "Private ECR repository URL for RunsOn image. When specified, App Runner will pull from this private ECR instead of public ECR."
+  type        = string
+  default     = ""
+}
+
 variable "ssh_allowed" {
   description = "Allow SSH access to runners"
   type        = bool
