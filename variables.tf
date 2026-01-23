@@ -486,3 +486,26 @@ variable "force_delete_ecr" {
   type        = bool
   default     = false
 }
+
+###########################
+# WAF Configuration
+# Used by: core module
+###########################
+
+variable "enable_waf" {
+  description = "Enable AWS WAF for App Runner service to restrict access to allowed IP ranges"
+  type        = bool
+  default     = false
+}
+
+variable "waf_allowed_ipv4_cidrs" {
+  description = "List of IPv4 CIDR blocks to allow through WAF (in addition to GitHub webhook IPs)"
+  type        = list(string)
+  default     = []
+}
+
+variable "waf_allowed_ipv6_cidrs" {
+  description = "List of IPv6 CIDR blocks to allow through WAF (in addition to GitHub webhook IPs)"
+  type        = list(string)
+  default     = []
+}
