@@ -12,6 +12,16 @@ data "http" "github_meta" {
   request_headers = {
     Accept = "application/json"
   }
+
+  # Timeout after 30 seconds to avoid hanging
+  request_timeout_ms = 30000
+
+  # Retry on transient failures (rate limits, network issues)
+  retry {
+    attempts     = 3
+    min_delay_ms = 1000
+    max_delay_ms = 5000
+  }
 }
 
 locals {
