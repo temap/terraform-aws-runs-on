@@ -394,4 +394,9 @@ resource "aws_apprunner_service" "this" {
       "runs-on-resource" = "apprunner-service" # Used for resource discovery
     }
   )
+
+  # Ensure ECR access policy is attached before App Runner tries to pull the image
+  depends_on = [
+    aws_iam_role_policy_attachment.apprunner_ecr_access
+  ]
 }
