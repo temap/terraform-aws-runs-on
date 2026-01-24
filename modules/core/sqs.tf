@@ -13,8 +13,7 @@ resource "aws_sqs_queue" "main_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-main-dlq"
-      Environment = var.environment
+      Name = "${var.stack_name}-main-dlq"
     }
   )
 }
@@ -27,8 +26,7 @@ resource "aws_sqs_queue" "jobs_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-jobs-dlq"
-      Environment = var.environment
+      Name = "${var.stack_name}-jobs-dlq"
     }
   )
 }
@@ -41,8 +39,7 @@ resource "aws_sqs_queue" "github_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-github-dlq"
-      Environment = var.environment
+      Name = "${var.stack_name}-github-dlq"
     }
   )
 }
@@ -54,8 +51,7 @@ resource "aws_sqs_queue" "pool_dead_letter" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-pool-dlq"
-      Environment = var.environment
+      Name = "${var.stack_name}-pool-dlq"
     }
   )
 }
@@ -65,7 +61,7 @@ resource "aws_sqs_queue" "pool_dead_letter" {
 ###########################
 
 resource "aws_sqs_queue" "main" {
-  name                        = local.queue_main
+  name                        = "${var.stack_name}-main.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
   message_retention_seconds   = 86400
@@ -80,14 +76,13 @@ resource "aws_sqs_queue" "main" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-main"
-      Environment = var.environment
+      Name = "${var.stack_name}-main"
     }
   )
 }
 
 resource "aws_sqs_queue" "jobs" {
-  name                        = local.queue_jobs
+  name                        = "${var.stack_name}-jobs.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
   message_retention_seconds   = 86400
@@ -102,14 +97,13 @@ resource "aws_sqs_queue" "jobs" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-jobs"
-      Environment = var.environment
+      Name = "${var.stack_name}-jobs"
     }
   )
 }
 
 resource "aws_sqs_queue" "github" {
-  name                        = local.queue_github
+  name                        = "${var.stack_name}-github.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
   message_retention_seconds   = 86400
@@ -124,14 +118,13 @@ resource "aws_sqs_queue" "github" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-github"
-      Environment = var.environment
+      Name = "${var.stack_name}-github"
     }
   )
 }
 
 resource "aws_sqs_queue" "pool" {
-  name                       = local.queue_pool
+  name                       = "${var.stack_name}-pool"
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 10
   visibility_timeout_seconds = 120
@@ -144,14 +137,13 @@ resource "aws_sqs_queue" "pool" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-pool"
-      Environment = var.environment
+      Name = "${var.stack_name}-pool"
     }
   )
 }
 
 resource "aws_sqs_queue" "housekeeping" {
-  name                       = local.queue_housekeeping
+  name                       = "${var.stack_name}-housekeeping"
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 10
   visibility_timeout_seconds = 120
@@ -159,14 +151,13 @@ resource "aws_sqs_queue" "housekeeping" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-housekeeping"
-      Environment = var.environment
+      Name = "${var.stack_name}-housekeeping"
     }
   )
 }
 
 resource "aws_sqs_queue" "termination" {
-  name                       = local.queue_termination
+  name                       = "${var.stack_name}-termination"
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 10
   visibility_timeout_seconds = 120
@@ -174,14 +165,13 @@ resource "aws_sqs_queue" "termination" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-termination"
-      Environment = var.environment
+      Name = "${var.stack_name}-termination"
     }
   )
 }
 
 resource "aws_sqs_queue" "events" {
-  name                       = local.queue_events
+  name                       = "${var.stack_name}-events"
   message_retention_seconds  = 7200
   receive_wait_time_seconds  = 10
   visibility_timeout_seconds = 120
@@ -189,8 +179,7 @@ resource "aws_sqs_queue" "events" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-events"
-      Environment = var.environment
+      Name = "${var.stack_name}-events"
     }
   )
 }

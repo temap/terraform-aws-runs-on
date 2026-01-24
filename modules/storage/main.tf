@@ -17,10 +17,5 @@ data "aws_caller_identity" "current" {}
 
 # Local variables
 locals {
-  common_tags = merge(
-    var.tags,
-    {
-      Module = "runs-on-storage"
-    }
-  )
+  common_tags = var.tags
 }

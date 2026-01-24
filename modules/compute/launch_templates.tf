@@ -47,32 +47,17 @@ resource "aws_launch_template" "linux_default" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "network-interface"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   user_data = base64encode(templatefile("${path.module}/user-data-linux.sh", {
@@ -91,8 +76,7 @@ resource "aws_launch_template" "linux_default" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-linux-default"
-      Environment = var.environment
+      Name = "${var.stack_name}-linux-default"
     }
   )
 }
@@ -139,32 +123,17 @@ resource "aws_launch_template" "windows_default" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "network-interface"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   user_data = base64encode(templatefile("${path.module}/user-data-windows.ps1", {
@@ -183,8 +152,7 @@ resource "aws_launch_template" "windows_default" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-windows-default"
-      Environment = var.environment
+      Name = "${var.stack_name}-windows-default"
     }
   )
 }
@@ -231,32 +199,17 @@ resource "aws_launch_template" "linux_private" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "network-interface"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   user_data = base64encode(templatefile("${path.module}/user-data-linux.sh", {
@@ -275,8 +228,7 @@ resource "aws_launch_template" "linux_private" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-linux-private"
-      Environment = var.environment
+      Name = "${var.stack_name}-linux-private"
     }
   )
 }
@@ -323,32 +275,17 @@ resource "aws_launch_template" "windows_private" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   tag_specifications {
     resource_type = "network-interface"
-    tags = merge(
-      local.common_tags,
-      {
-        (var.cost_allocation_tag) = var.stack_name
-      }
-    )
+    tags          = local.common_tags
   }
 
   user_data = base64encode(templatefile("${path.module}/user-data-windows.ps1", {
@@ -367,8 +304,7 @@ resource "aws_launch_template" "windows_private" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${var.stack_name}-windows-private"
-      Environment = var.environment
+      Name = "${var.stack_name}-windows-private"
     }
   )
 }

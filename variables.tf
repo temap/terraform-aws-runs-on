@@ -33,9 +33,7 @@ variable "cost_allocation_tag" {
 variable "tags" {
   description = "Tags to apply to all resources. Note: 'runs-on-stack-name' is added automatically for resource discovery."
   type        = map(string)
-  default = {
-    ManagedBy = "opentofu/terraform"
-  }
+  default     = {}
 }
 
 ###########################
@@ -220,8 +218,8 @@ variable "runner_default_volume_throughput" {
   default     = 400
 
   validation {
-    condition     = var.runner_default_volume_throughput >= 125 && var.runner_default_volume_throughput <= 1000
-    error_message = "Volume throughput must be between 125 and 1000 MiB/s for gp3 volumes."
+    condition     = var.runner_default_volume_throughput >= 125 && var.runner_default_volume_throughput <= 2000
+    error_message = "Volume throughput must be between 125 and 2000 MiB/s for gp3 volumes."
   }
 }
 
@@ -242,8 +240,8 @@ variable "runner_large_volume_throughput" {
   default     = 750
 
   validation {
-    condition     = var.runner_large_volume_throughput >= 125 && var.runner_large_volume_throughput <= 1000
-    error_message = "Large volume throughput must be between 125 and 1000 MiB/s for gp3 volumes."
+    condition     = var.runner_large_volume_throughput >= 125 && var.runner_large_volume_throughput <= 2000
+    error_message = "Large volume throughput must be between 125 and 2000 MiB/s for gp3 volumes."
   }
 }
 
@@ -296,6 +294,12 @@ variable "app_debug" {
   description = "Enable debug mode for RunsOn stack (prevents auto-shutdown of failed runner instances)"
   type        = bool
   default     = false
+}
+
+variable "app_ecr_repository_url" {
+  description = "Private ECR repository URL for RunsOn image (e.g., 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-repo:tag). When specified, App Runner will pull from this private ECR instead of public ECR."
+  type        = string
+  default     = ""
 }
 
 ###########################
@@ -487,4 +491,27 @@ variable "force_delete_ecr" {
   description = "Allow ECR repository to be deleted even when it contains images. Set to true for testing environments."
   type        = bool
   default     = false
+}
+
+###########################
+# WAF Configuration
+# Used by: core module
+###########################
+
+variable "enable_waf" {
+  description = "Enable AWS WAF for App Runner service to restrict access to allowed IP ranges"
+  type        = bool
+  default     = false
+}
+
+variable "waf_allowed_ipv4_cidrs" {
+  description = "List of IPv4 CIDR blocks to allow through WAF (in addition to GitHub webhook IPs)"
+  type        = list(string)
+  default     = []
+}
+
+variable "waf_allowed_ipv6_cidrs" {
+  description = "List of IPv6 CIDR blocks to allow through WAF (in addition to GitHub webhook IPs)"
+  type        = list(string)
+  default     = []
 }

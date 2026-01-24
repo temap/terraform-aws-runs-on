@@ -18,7 +18,8 @@ locals {
   common_tags = merge(
     var.tags,
     {
-      "runs-on-stack-name" = var.stack_name
+      "runs-on-stack-name"      = var.stack_name
+      (var.cost_allocation_tag) = var.stack_name
     }
   )
 }
@@ -43,8 +44,6 @@ module "storage" {
   source = "./modules/storage"
 
   stack_name            = var.stack_name
-  environment           = var.environment
-  cost_allocation_tag   = var.cost_allocation_tag
   cache_expiration_days = var.cache_expiration_days
   force_destroy_buckets = var.force_destroy_buckets
 
@@ -63,7 +62,6 @@ module "compute" {
   account_id = local.account_id
 
   stack_name          = var.stack_name
-  environment         = var.environment
   cost_allocation_tag = var.cost_allocation_tag
 
   # S3 bucket dependencies from storage module
@@ -118,8 +116,7 @@ module "compute" {
 module "optional" {
   source = "./modules/optional"
 
-  stack_name  = var.stack_name
-  environment = var.environment
+  stack_name = var.stack_name
 
   # Feature flags
   enable_efs = var.enable_efs
@@ -179,11 +176,12 @@ module "core" {
   launch_template_windows_private_id = module.compute.launch_template_windows_private_id
 
   # App Runner configuration
-  app_image     = var.app_image
-  app_tag       = var.app_tag
-  app_cpu       = var.app_cpu
-  app_memory    = var.app_memory
-  bootstrap_tag = var.bootstrap_tag
+  app_image              = var.app_image
+  app_tag                = var.app_tag
+  app_cpu                = var.app_cpu
+  app_memory             = var.app_memory
+  bootstrap_tag          = var.bootstrap_tag
+  app_ecr_repository_url = var.app_ecr_repository_url
 
   # Networking
   private_mode = var.private_mode
@@ -227,6 +225,11 @@ module "core" {
   # Alarms
   app_alarm_daily_minutes                    = var.app_alarm_daily_minutes
   sqs_queue_oldest_message_threshold_seconds = var.sqs_queue_oldest_message_threshold_seconds
+
+  # WAF configuration
+  enable_waf             = var.enable_waf
+  waf_allowed_ipv4_cidrs = var.waf_allowed_ipv4_cidrs
+  waf_allowed_ipv6_cidrs = var.waf_allowed_ipv6_cidrs
 
   tags = local.common_tags
 
