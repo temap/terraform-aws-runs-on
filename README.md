@@ -81,6 +81,25 @@ When upgrading, check:
 1. The RunsOn version changelog at [runs-on.com/changelog](https://runs-on.com/changelog)
 2. The Terraform module release notes in this repository
 
+### Using a Git Branch
+
+To use this module from a specific git branch: 
+
+```hcl
+module "runs-on" {
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git?ref=dev"
+
+  github_organization = "my-org"
+  license_key         = "your-license-key"
+  email               = "alerts@example.com"
+
+  vpc_id            = "vpc-xxxxxxxx"
+  public_subnet_ids = ["subnet-pub1", "subnet-pub2", "subnet-pub3"]
+}
+```
+
+Replace `dev` with any branch name, tag, or commit SHA
+
 > [!TIP]
 Cost Estimates:
 > - **RunsOn base:** ~$3/mo (App Runner)
