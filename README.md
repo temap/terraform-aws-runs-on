@@ -6,7 +6,7 @@ Deploy [RunsOn](https://runs-on.com) self-hosted GitHub Actions runners on AWS w
 
 ```hcl
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.5.7"
 
   required_providers {
     aws = {
