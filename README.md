@@ -2,6 +2,28 @@
 
 Deploy [RunsOn](https://runs-on.com) self-hosted GitHub Actions runners on AWS with Terraform/OpenTofu.
 
+## Table of Contents
+
+- [Usage](#usage)
+- [Versioning](#versioning)
+  - [Using a Git Branch](#using-a-git-branch)
+- [Resource Tags](#resource-tags)
+- [Architecture](#architecture)
+- [Examples](#examples)
+  - [Basic](#basic)
+  - [Private Networking](#private-networking)
+  - [EFS Enabled](#efs-enabled)
+  - [ECR Enabled](#ecr-enabled)
+  - [WAF (Web Application Firewall)](#waf-web-application-firewall)
+  - [Full Featured](#full-featured)
+- [Requirements](#requirements)
+- [Providers](#providers)
+- [Modules](#modules)
+- [Resources](#resources)
+- [Inputs](#inputs)
+- [Outputs](#outputs)
+- [License](#license)
+
 ## Usage
 
 ```hcl
