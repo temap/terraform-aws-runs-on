@@ -120,16 +120,7 @@ module "runs-on" {
 }
 ```
 
-Replace `dev` with any branch name, tag, or commit SHA
-
-> [!TIP]
-Cost Estimates:
-> - **RunsOn base:** ~$3/mo (App Runner)
-> - **NAT Gateway:** ~$32/mo per gateway + data transfer charges (required for private networking)
-> - **VPC Endpoints:** ~$7/mo per interface endpoint + data transfer charges (S3 gateway endpoint is free)
-> - **EFS:** ~$0.30/GB-month for storage
-> - **ECR:** ~$0.10/GB-month for storage
-> - **Runners:** EC2 costs vary by instance type and usage (pay only for what you use)
+Replace `main` with any branch name, tag, or commit SHA
 
 ## Resource Tags
 
@@ -201,6 +192,18 @@ flowchart TB
     style Monitoring fill:#23863622,stroke:#238636
     classDef github fill:#8b5cf6,stroke:#7c3aed,color:#fff,stroke-width:2px
 ```
+
+> [!TIP]
+Cost Estimates:
+> - **RunsOn base:** ~$3/mo (App Runner)
+> - **EFS (optional):** ~$0.30/GB-month for storage
+> - **ECR (optional):** ~$0.10/GB-month for storage
+> - **Runners:** EC2 costs vary by instance type and usage (pay only for what you use)
+> - **S3 Gateway endpoints**: free
+>
+> When using private networking, keep in mind you might incur the following costs:
+> - **NAT Gateway:** ~$32/mo per gateway + data transfer charges
+> - **VPC Endpoints:** ~$7/mo per interface endpoint (e.g. EC2, ECR) + data transfer charges
 
 # Examples
 
