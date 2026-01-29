@@ -83,11 +83,11 @@ When upgrading, check:
 
 ### Using a Git Branch
 
-To use this module from a specific git branch: 
+To use this module from a specific git branch (e.g. `main`):
 
 ```hcl
 module "runs-on" {
-  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git?ref=dev"
+  source = "git::https://github.com/runs-on/terraform-aws-runs-on.git?ref=main"
 
   github_organization = "my-org"
   license_key         = "your-license-key"
