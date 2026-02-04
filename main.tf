@@ -6,6 +6,17 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 ###########################
+# Input Validation
+###########################
+
+check "private_mode_requires_subnets" {
+  assert {
+    condition     = var.private_mode == "false" || length(var.private_subnet_ids) > 0
+    error_message = "At least one private subnet ID is required when private_mode is not 'false'."
+  }
+}
+
+###########################
 # Local Variables
 ###########################
 
