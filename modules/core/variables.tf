@@ -132,6 +132,17 @@ variable "app_image" {
   type        = string
 }
 
+variable "image_repository_type" {
+  description = "Image repository type: 'ECR' for private ECR, 'ECR_PUBLIC' for public ECR"
+  type        = string
+  default     = "ECR_PUBLIC"
+
+  validation {
+    condition     = contains(["ECR", "ECR_PUBLIC"], var.image_repository_type)
+    error_message = "image_repository_type must be either 'ECR' or 'ECR_PUBLIC'."
+  }
+}
+
 variable "app_tag" {
   description = "Application version tag"
   type        = string

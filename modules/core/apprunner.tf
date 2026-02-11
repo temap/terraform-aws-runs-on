@@ -39,9 +39,46 @@ resource "aws_apprunner_vpc_connector" "this" {
 }
 
 ###########################
-# App Runner IAM Role
+# App Runner IAM Roles
 ###########################
 
+# ECR Access Role - for pulling images from private ECR
+# Only created when using private ECR (image_repository_type = "ECR")
+resource "aws_iam_role" "apprunner_ecr_access" {
+  count = var.image_repository_type == "ECR" ? 1 : 0
+
+  name = "${var.stack_name}-apprunner-ecr-access-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "build.apprunner.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name        = "${var.stack_name}-apprunner-ecr-access-role"
+      Environment = var.environment
+    }
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "apprunner_ecr_access" {
+  count = var.image_repository_type == "ECR" ? 1 : 0
+
+  role       = aws_iam_role.apprunner_ecr_access[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
+}
+
+# Instance Role - for runtime permissions
 resource "aws_iam_role" "apprunner" {
   name = "${var.stack_name}-apprunner-role"
 
@@ -68,17 +105,13 @@ resource "aws_iam_role" "apprunner" {
   )
 }
 
-resource "aws_iam_role_policy_attachment" "apprunner_ecr" {
-  role       = aws_iam_role.apprunner.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
-}
-
 ###########################
 # App Runner ECR Access Role (for private ECR)
 ###########################
 
 resource "aws_iam_role" "apprunner_ecr_access" {
-  count = var.app_ecr_repository_url != "" ? 1 : 0
+  # Create ECR access role if using private ECR (either via app_ecr_repository_url or image_repository_type = "ECR")
+  count = var.app_ecr_repository_url != "" || var.image_repository_type == "ECR" ? 1 : 0
   name  = "${var.stack_name}-apprunner-ecr-access"
 
   assume_role_policy = jsonencode({
@@ -103,10 +136,11 @@ resource "aws_iam_role" "apprunner_ecr_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "apprunner_ecr_access" {
-  count      = var.app_ecr_repository_url != "" ? 1 : 0
+  count      = var.app_ecr_repository_url != "" || var.image_repository_type == "ECR" ? 1 : 0
   role       = aws_iam_role.apprunner_ecr_access[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
+
 
 # App Runner service policy
 resource "aws_iam_role_policy" "apprunner_permissions" {
@@ -361,8 +395,9 @@ resource "aws_apprunner_service" "this" {
 
   source_configuration {
     # Authentication configuration for private ECR
+    # Required when using private ECR (via app_ecr_repository_url or image_repository_type = "ECR")
     dynamic "authentication_configuration" {
-      for_each = var.app_ecr_repository_url != "" ? [1] : []
+      for_each = var.app_ecr_repository_url != "" || var.image_repository_type == "ECR" ? [1] : []
       content {
         access_role_arn = aws_iam_role.apprunner_ecr_access[0].arn
       }
@@ -379,9 +414,14 @@ resource "aws_apprunner_service" "this" {
         runtime_environment_secrets = local.sensitive_env_secrets
       }
 
-      # Use private ECR URL if provided, otherwise default public image
-      image_identifier      = var.app_ecr_repository_url != "" ? var.app_ecr_repository_url : var.app_image
-      image_repository_type = var.app_ecr_repository_url != "" ? "ECR" : "ECR_PUBLIC"
+      # Use private ECR URL if provided, otherwise use app_image
+      # If app_ecr_repository_url is provided, it takes precedence
+      image_identifier = var.app_ecr_repository_url != "" ? var.app_ecr_repository_url : var.app_image
+
+      # Determine repository type:
+      # - If app_ecr_repository_url is provided, use "ECR"
+      # - Otherwise, use the explicit image_repository_type variable
+      image_repository_type = var.app_ecr_repository_url != "" ? "ECR" : var.image_repository_type
     }
 
     auto_deployments_enabled = false

@@ -251,6 +251,17 @@ variable "app_image" {
   default     = "public.ecr.aws/c5h5o9k1/runs-on/runs-on:v2.11.0@sha256:875bcd8a36be7be78509a4c8371cdb4bff01af06c49f4a2d2a2647e3bf44bac5"
 }
 
+variable "image_repository_type" {
+  description = "Image repository type: 'ECR' for private ECR (requires authentication), 'ECR_PUBLIC' for public ECR (no authentication needed)"
+  type        = string
+  default     = "ECR_PUBLIC"
+
+  validation {
+    condition     = contains(["ECR", "ECR_PUBLIC"], var.image_repository_type)
+    error_message = "image_repository_type must be either 'ECR' or 'ECR_PUBLIC'."
+  }
+}
+
 variable "app_tag" {
   description = "Application version tag for RunsOn service"
   type        = string

@@ -188,6 +188,7 @@ module "core" {
 
   # App Runner configuration
   app_image              = var.app_image
+  image_repository_type  = var.image_repository_type
   app_tag                = var.app_tag
   app_cpu                = var.app_cpu
   app_memory             = var.app_memory
